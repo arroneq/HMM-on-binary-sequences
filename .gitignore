@@ -1,0 +1,11 @@
+/Dimpoma research/Python/*
+!/Dimpoma research/Python/images
+!/Dimpoma research/Python/GUI main.py
+!/Dimpoma research/Python/HMM.py
+
+/Scientific student conference/Theses/*
+!/Scientific student conference/Theses/data
+!/Scientific student conference/Theses/*.tex
+!/Scientific student conference/Theses/*.cls
+!/Scientific student conference/Theses/*.bib
+!/Scientific student conference/Theses/*.pdf

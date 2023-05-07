@@ -1,0 +1,522 @@
+% !TeX program = lualatex
+% !TeX encoding = utf8
+% !TeX spellcheck = uk_Ua
+% !BIB TS-program = biber
+
+\documentclass[]{iptconf}
+
+%%% --------------------------------------------------------
+%%> \section{Реєстраційна форма}
+%%% --------------------------------------------------------
+
+\regform{
+    fullname = {Цибульник Антон Владиславович},              % Повне ім'я доповідача (перший автор)
+    birthday = {29.10.2001},                                 % Дата народження доповідача
+    position = {студент},                                    % Посада доповідача
+    phone = {+380509935293},                                 % Телефонний номер доповідача
+    authoremail = {anton.tsybulnik@gmail.com},               % Email доповідача
+    confsection = {Математичне моделювання та аналіз даних}, % Секція конференції,
+    copynum = {0},                                           % Замовлена число друкованого збірника
+    needliving = {ні},                                       % Потреба в житлі (Ні/Хостел/Готель/інше)
+    needinvitanion = {ні},                                   % Чи потрібне запрошення на конференцію?
+}
+
+%%% --------------------------------------------------------
+%%> \section{Використані пакети}
+%%% --------------------------------------------------------
+
+\usepackage{tabularray}
+\usepackage{mathtools}
+\usepackage{dsfont}
+\usepackage{mathrsfs}
+\usepackage{wrapfig}
+\usepackage{xurl}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\pgfplotsset{compat=1.18}
+
+\usepackage{float}
+\usepackage{microtype}
+
+\usepackage{cmap} % make LaTeX PDF output copy-and-pasteable
+
+\usepackage{xcolor}
+% \pagecolor[rgb]{0.118,0.118,0.118}
+% \color[rgb]{0.8,0.8,0.8}
+
+%%% --------------------------------------------------------
+%%> \section{Користувацькі команди}
+%%% --------------------------------------------------------
+
+% номерація формул всередині секцій + \setcounter{equation}{0} на початку кожної нової секції
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\newcommand*{\scaleq}[2][4]{\scalebox{#1}{$#2$}}%
+
+\usepackage{amsthm}
+\theoremstyle{plain}
+\newtheorem{claim}{\indent Твердження}
+
+%%% --------------------------------------------------------
+%%> \section{Файл бібліографії}
+%%% --------------------------------------------------------
+
+%% Змініть ім'я файлу бібліографі на ваше. Краще, щоб його назва була така ж сама, як у вашого .tex-файлу
+
+\addbibresource{Tsybulnyk.bib}
+\usepackage[autostyle=false]{csquotes}
+
+%%% --------------------------------------------------------
+%%> \section{Заголовок статті}
+%%% --------------------------------------------------------
+
+\title{Оцінювання характеристик частково спостережуваного ланцюга Маркова на двійкових послідовностях}
+
+%%% --------------------------------------------------------
+%%> \section{Автори}
+%%% --------------------------------------------------------
+
+%%Якщо бажаєте, введітьe-mail автора в квадратних дужках:
+\author[anton.tsybulnik@gmail.com]{А.~В.~Цибульник}{1}
+\author{І.~І.~Ніщенко}{1}
+
+%%% --------------------------------------------------------
+%%> \section{Установи}
+%%% --------------------------------------------------------
+
+%% Тут введіть установув якій працює, або навчається перший автор.
+%% Введіть \ipt якщо автор навчається, або працює в НТУУ "КПІ"
+\affiliation{\ipt}{1}
+
+%%% --------------------------------------------------------
+%%> \section{УДК та PACS}
+%%% --------------------------------------------------------
+
+\udc{519.217}
+
+%%% --------------------------------------------------------
+%%> \section{Анотація до статті}
+%%% --------------------------------------------------------
+
+\abstract{
+    Об'єктом дослідження є ланцюг Маркова зі значеннями в множині двійкових послідовностей фіксованої довжини. Динаміка ланцюга задається як випадкове блукання вершинами одиничного куба, розмірність якого збігається з довжиною двійкової послідовності. Стани цього ланцюга є неспостережуваними (прихованими), а матриця перехідних імовірностей~--- невідомою. 
+    
+    Спостережуваними величинами в кожен момент часу є набір значень певного функціонала від фіксованих підмножин двійкової послідовності, яка описує поточний стан прихованого ланцюга. Також є відомими значення вказаного функціонала, обчисленого від деякої невідомої підмножини стану прихованого ланцюга. Задача полягає у локалізації~--- оцінюванні потужності та набору елементів цієї підмножини. Для розв'язування задачі використовується математичний апарат прихованих марковських моделей. 
+}
+
+%%% --------------------------------------------------------
+%%> \section{Ключові слова}
+%%% --------------------------------------------------------
+
+\keywords{ланцюг Маркова, модель Еренфестiв, алгоритм Баума-Велша, алгоритм Вітербі}
+
+\begin{document}
+
+%%% --------------------------------------------------------
+%%> \section{Мова статті}
+%%% --------------------------------------------------------
+
+\PaperLanguage{ukrainian}
+
+%%% --------------------------------------------------------
+\section*{Вступ}
+%%% --------------------------------------------------------
+
+Марковські моделі мають широкий та ефективний арсенал інструментів для аналізу динаміки систем, поведінка яких у кожен наступний момент часу зумовлюється лише поточним станом системи та не залежить від характеру еволюції у попередні моменти часу. 
+
+Наприклад, в біоінформатиці~\cite[глава 9]{Koski2001} апарат ланцюгів Маркова застосовують при дослідженні еволюції молекул ДНК протягом певного часу, вважаючи при цьому за стан системи зв'язану послідовність так званих нуклеотидів, які формуються над алфавітом азотистих основ $\{ T,C,A,G \}$.  
+
+Водночас, у випадку, коли безпосереднє спостереження еволюції ланцюга Маркова є неможливим чи обмеженим, застосовують моделі прихованих марковських ланцюгів. У такому випадку аналіз поведінки процесу відбувається за деякою опосередкованою інформацією про <<приховані>>, справжні стани ланцюга. 
+
+Вважаючи, що динаміка ланцюга відбувається згідно узагальненої моделі Еренфестів, у цій роботі було застосовано приховану марковську модель для аналізу еволюції послідовностей, побудованих над алфавітом бінарних символів $\{ 0,1 \}$.
+
+%%% --------------------------------------------------------
+\section{Моделювання об'єкту дослідження}
+%%% -------------------------------------------------------- 
+\setcounter{equation}{0}
+
+Розглянемо ланцюг Маркова $\left\{ X^t \right\}_{t=\overline{1,T}}$, який приймає значення зі скінченної множини $E=\{0,1\}^N$~--- множини всеможливих бінарних послідовностей довжини $N$.
+
+Динаміка ланцюга відбувається згідно узагальненої моделі Еренфестів: в кожен момент часу $t$ навмання обирається число $j$ з множини індексів $\left\{ 1,2,\ldots,N \right\}$ бінарної послідовності $X^t$ та відповідний елемент стану $X^t_j$ залишається незмінним з імовірністю $p$ або змінюється на протилежний бінарний символ з імовірністю $1-p$.
+
+Як наслідок окресленої динаміки, матриця перехідних імовірностей ланцюга матиме вигляд:
+\begin{equation*}\label{eq: A transition probabilities}
+    A_{xx'}=P\left( X^{t+1}=x'\,|\,X^{t}=x \right) = 
+    \scaleq[0.8]{
+    \begin{cases*}
+        p, & $x'=x$ \\
+        \dfrac{1-p}{N}, & 
+            $\begin{aligned} 
+                & x^{'}_j = 1 - x_j \\ 
+                & \forall i \neq j : x^{'}_i=x_i \\ 
+            \end{aligned}$ \\ 
+        0, & інакше
+    \end{cases*}}
+\end{equation*}
+
+Крім того, інваріантний розподіл $\pi=\left( \pi_x \right)_{x \in E}$ заданого ланцюга є рівномірним, тобто $\pi_x = \frac{1}{2^N}$. Вважатимемо, що початковий розподіл збігається з $\pi$.
+
+Наступним кроком введемо послідовність випадкових величин $\left\{ Y^t \right\}_{t=\overline{1,T}}$, які формуються таким чином: 
+\begin{equation}\label{eq: observations}
+    Y^t = \left( Y^t_k \right)_{k=\overline{1,L}} = \Bigl( \phi\left( X^t,I_k \right) \Bigr)_{k=\overline{1,L}},\ t=\overline{1,T},
+\end{equation}
+де $I=\left\{ I_1,\ldots,I_L \right\}$~--- задані підмножини множини індексів $\left\{ 1,2,\ldots,N \right\}$, а функціонал $\phi$ визначимо так:
+\begin{equation}\label{eq: phi function}
+    \phi\left( X^t,I_k \right) = \sum_{i \in I_k} X^t_i
+\end{equation}
+
+\begin{claim}
+    Послідовність $\left\{ \left( X^t,Y^t \right) \right\}_{t=\overline{1,T}}$ утворює приховану марковську модель $\left( \pi,A,B \right)$, де 
+    \begin{equation*}\label{eq: B emission probabilities}
+        B_{xy}=P\left( Y^t=y\,|\,X^t=x \right) = \prod\limits_{k=1}^{L} \mathbb{1}\left( y_k=\sum\limits_{i \in I_k} x_i \right)
+    \end{equation*}
+\end{claim}
+
+%%% --------------------------------------------------------
+\section{Постановка задачі}
+%%% --------------------------------------------------------
+\setcounter{equation}{0}
+
+За спостереженнями~\eqref{eq: observations} прихованої марковської моделі слід знайти розв'язки задач:
+\begin{enumerate}
+    \item Оцінити невідомий <<параметр мутації>> $p$ елементів бінарних послідовностей прихованого ланцюга Маркова та декодувати послідовність станів прихованого ланцюга;
+    \item Вважаючи, що спостерігається деяке додаткове значення функціонала~\eqref{eq: phi function} від прихованих станів ланцюга по невідомій <<множині неявних індексів>> $I_*$, оцінити потужність цієї множини та відтворити набір її елементів;
+    \item Вважаючи, що значення введеного функціонала~\eqref{eq: phi function} від прихованих станів ланцюга по множинам $I_1,\ldots,I_L$ спостерігаються так:
+    \begin{equation}\label{eq: distorted phi function}
+        \phi\left( X^t,I_k \right) = \sum_{i \in I_k} \widetilde{X}^t_i,\ k=\overline{1,L},
+    \end{equation}
+    де для $i \in I_k$
+    \begin{equation}\label{eq: distorted X states}
+        \widetilde{X}^t_i =
+        \begin{cases*}
+            X^t_i, & з імовірністю $q_k$ \\
+            1 - X^t_i, & з імовірністю $1 - q_k$ \\
+        \end{cases*},
+    \end{equation}
+    оцінити невідомий параметр моделі $p$ та ймовірності спотворень $q_1,q_2,\ldots,q_L$.
+\end{enumerate}
+
+\subsection{Оцінка невідомого параметра моделі}
+
+\subsection*{Алгоритм навчання Баума-Велша}
+\label{section: baum-welch algorithm}
+
+Спостерігаючи~\eqref{eq: observations}, скористаємося методом максимальної правдоподібності, шукаючи оцінку невідомого параметра $p$ таким чином:
+\begin{equation*}\label{eq: p ML estomation}
+    \widehat{\,p\,} = \argmax\limits_{p} \sum_{x \in E^T} L_{p,x,y},
+\end{equation*}
+де
+\begin{gather}
+    L_{p,x,y} = P\, \bigl( X=x,\,Y=y\,|\,p \bigr) \label{eq: likelihood function} \\
+    X=x \Longleftrightarrow \left( X^1=x^1,\ldots,X^T=x^T \right) \notag \\
+    Y=y \Longleftrightarrow \left( Y^1=y^1,\ldots,Y^T=y^T \right) \notag
+\end{gather}
+
+Щоправда, для заданої марковської моделі вигляд функції правдоподібності~\eqref{eq: likelihood function} матиме громіздкий та неможливий для безпосререднього диференціювання вигляд. 
+
+Однак, в такому випадку можна застосувати модифікацію ЕМ-алгоритму для дослідження прихованих ланцюгів Маркова~--- ітераційний алгоритм Баума-Велша~\cite[розділ 15]{Koski2001}. 
+
+Задавши деяке наближення $p^{(0)}$ невідомого параметра $p$, покладемо
+\begin{equation*}\label{eq: p MQL estomation}
+    p^{(n+1)} = \argmax\limits_{p} Q\left( p^{(n)},p \right),
+\end{equation*}
+де
+\begin{equation}\label{eq: quasi-log likelihood function}
+    Q\left( p^{(n)},p \right) = \sum_{x \in E^T}L_{p^{(n)},x,y}\cdot\ln L_{p,x,y}
+\end{equation}
+є так званою функцією квазі-log правдоподібності.
+
+\newpage
+Доведено~\cite[розділ 4]{Koski2001}, що така ітераційна процедура є збіжною і приводить до точки локального максимуму логарифму функції правдоподібності~\eqref{eq: likelihood function}. 
+
+Максимізація функції~\eqref{eq: quasi-log likelihood function} приводить до такої ітераційної формули переоцінки параметра $p:$
+\begin{equation}\label{eq: p baum-welch estimation}
+    p^{(n+1)} = p^{(n)}\cdot\frac{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,B_{xy^{t+1}}\,\beta_{t+1}(x)}{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)},
+\end{equation}
+де 
+\begin{align}
+    & \alpha_t(x) = P\left( Y^1=y^1,\ldots,Y^t=y^t,\,X^t=x \,|\, p^{(n)} \right) \label{eq: alpha, forward algorithm coefficients} \\
+    & \beta_t(x) = P\left( Y^{t+1}=y^{t+1},\ldots,Y^T=y^T \,|\, X^t=x,\, p^{(n)} \right) \label{eq: beta, backward algorithm coefficients}
+\end{align}
+є так званими коефіцієнтами прямого та зворотного ходу відповідно~\cite[розділ 5]{Nilsson2005}. 
+
+\subsection*{Алгоритм декодування Вітербі}
+
+Використовуючи оцінене значення параметра $\widehat{\,p\,}$, отримане в результаті застосування алгоритму навчання Баума-Велша, скористаємося алгоритмом декодування Вітербі~\cite[розділ 6]{Nilsson2005} для пошуку такої послідовності прихованих станів $\widehat{X}^1,\widehat{X}^2,\ldots,\widehat{X}^T$, яка найкращим чином описує наявні спостереження:
+\begin{equation*}\label{eq: decoded stated}
+    \widehat{X} = \argmax\limits_{x \in E^T} P\left( X=x\,|\,Y=y,\widehat{\,p\,} \right)
+\end{equation*}
+
+\subsection{Оцінка множини неявних індексів}
+
+Нехай окрім набору спостережень~\eqref{eq: observations} протягом еволюції ланцюга на кожному кроці $t$ спостерігається деяке додаткове значення $Y^t_{I_*}$ функціонала~\eqref{eq: phi function} від прихованого стану ланцюга по деякій невідомій підмножині індексів $I_* \subseteq \left\{ 1,2,\ldots,N \right\}:$
+\begin{equation*}
+    Y_{I_*} = \left( Y^t_{I_*} \right)_{t=\overline{1,T}} = \left( \sum_{i \in I_*} X^t_i \right)_{t=\overline{1,T}} 
+\end{equation*}
+
+Перш за все, оцінимо потужність множини $I_*$. Зауважимо, що в силу заданого способу еволюції прихованого ланцюга Маркова
+\begin{equation*}
+    P\left( Y^t_{I_*}=Y^{t+1}_{I_*} \right)=\frac{\left| I_* \right|}{N}\cdot p + \frac{N-\left| I_* \right|}{N}
+\end{equation*}
+
+Ця рівність дозволяє побудувати незміщену та змістовну оцінку для потужності $|I_*|$.
+
+\begin{claim}
+    Змістовною і незміщеною оцінкою потужності множини $I_*$ є статистика
+    \begin{equation}\label{eq: ||I*|| estimation}
+        \widehat{|I_*|} = \frac{N}{1-p} \left( 1-\frac{1}{T-1}\sum_{t=1}^{T-1}\mathbb{1}\left( Y^t_{I_*}=Y^{t+1}_{I_*} \right) \right) 
+    \end{equation}
+\end{claim}
+
+Аналогічним чином побудуємо оцінку для потужності перетину множини $I_*$ з індексами множин, які задають спостереження моделі. Вказана оцінка дозволить виявити взаємне розташування елементів множини неявних індексів та множини доступних для дослідження елементів прихованого стану ланцюга Маркова.
+
+\begin{claim}
+    Нехай $H \subseteq I_1 \cup I_2 \cup \ldots \cup I_L$~--- довільна підмножина множини спостережуваних індексів $I_1 \cup I_2 \cup \ldots \cup I_L$. Тоді змістовною та незміщеною оцінкою потужності множини $I_* \cap H$ є статистика
+    \begin{equation}\label{eq: ||I* cup H|| estimation}
+        \widehat{\,|I_* \cap H|\,} = \tfrac{N}{(T-1)(1-p)} \cdot \sum_{t=1}^{T-1}\mathbb{1} \left( Y^t_{I_*} \neq Y^{t+1}_{I_*},\, Y^t_H \neq Y^{t+1}_H \right)
+    \end{equation}
+\end{claim}
+
+Стратегія визначення елементів, які безпосередньо входять в множину $I_*$, складатиметься з декількох кроків:
+\begin{itemize}
+    \item із загальної множини індексів $\left\{ 1,2,\ldots,N \right\}$ сформувати всеможливі підмножини довжиною $\widehat{|I_*|}$, тобто вибірку 
+    \begin{equation}\label{eq: candidates for I^}
+        \left\{ \mathtt{I_1},\mathtt{I_2},\ldots,\mathtt{I}_{C^{\widehat{|I_*|}}_N} \right\}
+    \end{equation}
+    \item для кожного <<кандидата>> $\mathtt{I_k}$ з множини \eqref{eq: candidates for I^} згенерувати послідовність значень функціонала~\eqref{eq: phi function} від декодованих прихованих станів по відповідних індексах:
+    \begin{equation*}
+        \widehat{Y\,}_{\mathtt{I_k}} = \left( \widehat{Y\,}^t_{\mathtt{I_k}} \right)_{t=\overline{1,T}} = \left( \sum_{i \in \mathtt{I_k}} \widehat{X}^t_i \right)_{t=\overline{1,T}}
+    \end{equation*}
+    \item за допомогою деякої заданої міри $d$ оцінити для кожного $\mathtt{I_k}$ відстань між наборами $\widehat{Y\,}_{\mathtt{I_k}}$ та $Y_{I_*}$;
+    \item оцінкою $\widehat{I\,}$ множини $I_*$ стане той <<кандидат>> $\mathtt{I_k}$ з множини \eqref{eq: candidates for I^}, для якого $d$ буде найменшою:
+    \begin{equation}\label{eq: I^ estimation}
+        \widehat{I\,} = \argmin\limits_{1\leqslant k \leqslant C^{\widehat{|I_*|}}_N}{d\left( \widehat{Y\,}_{\mathtt{I_k}}, Y_{I_*} \right)}
+    \end{equation}
+\end{itemize}
+
+Міру близькості $d$ між двома невід'ємними цілочисельними множинами $\widehat{Y\,}_{\mathtt{I_k}}$ та $Y_{I_*}$ однакової довжини визначатимемо або за допомогою середньоквадратичної відстані
+\begin{equation}\label{eq: square average distance}
+    d_{S}\left( \widehat{Y\,}_{\mathtt{I_k}},Y_{I_*} \right) = \sum_{t=1}^{T}\left( \widehat{Y\,}^t_{\mathtt{I_k}} - Y^t_{I_*} \right)^2,
+\end{equation}
+або користуючись зваженою відстанню Жаккара~\cite{Chierichetti2010}
+\begin{equation}\label{eq: weighted Jaccard distance}
+    d_{J}\left( \widehat{Y\,}_{\mathtt{I_k}},Y_{I_*} \right) = 1 - \frac{\sum\limits_{t=1}^{T}\min{\left( \widehat{Y\,}^t_{\mathtt{I_k}},Y^t_{I_*} \right)}}{\sum\limits_{t=1}^{T}\max{\left( \widehat{Y\,}^t_{\mathtt{I_k}},Y^t_{I_*} \right)}}
+\end{equation}
+
+\subsection{Оцінка коефіцієнтів спотворення}
+
+Припустимо, що значення функціонала~\eqref{eq: phi function} від прихованих станів ланцюга $\left\{ X^t \right\}_{t=\overline{1,T}}$ по множинам $I_1,\ldots,I_L$ спостерігаються із деякими ймовірностями спотворення $q_1,q_2,\ldots,q_L$ згідно~\eqref{eq: distorted phi function} та~\eqref{eq: distorted X states}.
+
+Оцінимо параметр $p$ та вектор імовірностей спотворень $q=\left( q_1,q_2,\ldots,q_L \right)$, використовуючи ітераційний алгоритм Баума-Велша.
+
+\begin{claim}
+    Якщо множини $I_1,\ldots,I_L$ є попарно неперетинними, то утворена послідовність $\left\{ \left( X^t,Y^t \right) \right\}_{t=\overline{1,T}}$ є прихованою марковською моделлю $\left( \pi,A,B^q \right)$, де 
+    \begin{equation*}
+        B^q_{xy} = P\left( Y^t=y\,|\,X^t=x \right) = \prod\limits_{k=1}^{L} P\left( \xi^k_{01}(x) + \xi^k_{11}(x) = y_k \right),
+    \end{equation*}
+    і для довільного $k=\overline{1,L}$
+    \begin{align*}
+        & \xi^k_{01}(x) \sim Bin\left( |I_k| - \sum_{i \in I_k} x_i,\, q_k \right) \\
+        & \xi^k_{11}(x) \sim Bin\left( \sum_{i \in I_k} x_i,\, 1 - q_k \right)
+    \end{align*}
+    % \begin{equation*}\scaleq[0.8]{
+    %     \xi^k_{01}(x) \sim Bin\left( |I_k| - \sum_{i \in I_k} x_i,\, q_k \right),\ \xi^k_{11}(x) \sim Bin\left( \sum_{i \in I_k} x_i,\, 1 - q_k \right)}
+    % \end{equation*}
+    є незалежними випадковими величинами. 
+\end{claim}
+
+Виберемо деяке початкове наближення моделі $\left( \pi,A^{(0)},B^{q^{(0)}} \right)$, визначимо коефіцієнти прямого~\eqref{eq: alpha, forward algorithm coefficients} та зворотного~\eqref{eq: beta, backward algorithm coefficients} ходу. Тоді ітераційна формула переоцінки параметра $p$ матиме вид:
+\begin{equation}\label{eq: distortion p estimation}
+    p^{(n+1)} = p^{(n)}\cdot\frac{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,B^{q^{(n)}}_{xy^{t+1}}\,\beta_{t+1}(x)}{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)},
+\end{equation}
+а формула переоцінки компонент вектора $\left( q_k \right)_{k=\overline{1,L}}:$ 
+\begin{equation}\label{eq: distortion q estimation}
+    q_k^{(n+1)} = q_k^{(n)}\cdot\frac{\sum\limits_{t=1}^{T}\sum\limits_{x \in E}\beta_{t}(x)\sum\limits_{x' \in E} \alpha_{t-1}(x')\,A^{(n)}_{x'x}\sum\limits_{i \in I_k}P^{q^{(n)}}_{x,i}}{|I_k|\sum\limits_{t=1}^{T}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)},
+\end{equation}
+де при $i \in I_m$
+\begin{multline*}
+    P^{q}_{x,i} = P\left( \widetilde{\xi^m_{01}}(x) + \widetilde{\xi^m_{11}}(x) = y_m + x_i - 1 \right)  \times \\ 
+    \times \prod\limits_{\substack{k = \overline{1,L} \\ k \neq m}} P\left( \xi^k_{01}(x) + \xi^k_{11}(x) = y_k \right)
+\end{multline*}
+та
+\begin{align*}
+    & \widetilde{\xi^m_{01}}(x) \sim Bin\left( |I_m| - 1 - \sum_{j \in I_m\setminus\{i\}} x_j,\, q_m \right) \\
+    & \widetilde{\xi^m_{11}}(x) \sim Bin\left(\sum_{j \in I_m\setminus\{i\}} x_j,\, 1 - q_m \right)
+\end{align*}
+
+Наостанок зауважимо, що при великих значеннях довжини ланцюга $(T>300)$ виникає потреба у шкалюванні~\cite[розділ 5]{Nilsson2005} коефіцієнтів прямого та зворотного ходу, адже їхні значення стають нерозрізнювано малими для обчислювальних ресурсів. Процедура нормування не вносить змін у вигляд ітераційних формул переоцінки~\eqref{eq: p baum-welch estimation}, \eqref{eq: distortion p estimation} чи \eqref{eq: distortion q estimation}.
+
+%%% --------------------------------------------------------
+\section{Результати чисельного експерименту}
+%%% -------------------------------------------------------- 
+\setcounter{equation}{0}
+
+\subsection*{Оцінка невідомого параметра моделі}
+
+Було згенеровано прихований ланцюг Маркова протягом $T=200$ моментів часу для бінарних послідовностей довжини $N=5$ при заданому параметрі моделі $p=0.2$. Множину спостережуваних індексів було задано таким чином:
+\begin{equation}\label{eq: example observed indexes}
+    I=\{I_1,I_2\}=\{(1,2,3),(1,4)\}
+\end{equation} 
+
+Рис.~\ref{pic: p baum-welch learning algorithm} демонструє збіжність алгоритму навчання Баума-Велша при оцінці параметра $p$. Червоним кольором позначено початкове наближення $p^{(0)}=0.6$.
+\begin{figure}[H]\centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            xlabel = Ітерації $n$ алгоритму,
+            ylabel = Значення параметра $p^{(n)}$,
+            grid = both,
+            grid style = {draw=gray!30},
+            minor tick num = 4,
+            minor grid style = {draw=gray!10},
+        ]
+            \addplot[blue!80, mark=*] table {data/baum-welch learning algorithm.txt};
+            \addplot[red, mark=*] table {
+                n p
+                0 0.6
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Ітерації алгоритму Баума-Велша для оцінки параметра $p$}
+    \label{pic: p baum-welch learning algorithm}
+\end{figure}
+
+Вже за $n=12$ ітерацій алгоритм досягає точності переоцінки $\varepsilon=0.0001$ оцінюваного параметра. При цьому, отримане значення $\widehat{\,p\,}=0.1897$ відрізняється від свого істинного значення $p=0.2$ на $\delta=0.0103$.
+
+\subsection*{Алгоритм декодування прихованих станів}
+
+Наступним кроком, отримавши оцінене значення $\widehat{\,p\,}$, декодуємо ланцюг прихованих станів за допомогою алгоритму Вітербі~\cite[розділ 6]{Nilsson2005}. 
+
+Якість отриманих результатів оцінимо через порівняння в кожен момент часу $t$ істинної прихованої бінарної послідовності $X^t$ та декодованої $\widehat{X^t}$ за допомогою відстані Геммінга:
+\begin{equation*}
+    d_H\left( X^t,\widehat{X^t} \right) = \sum_{i=1}^{N} \mathbb{1}\left( X^t_i \neq \widehat{X^t_i} \right)
+\end{equation*} 
+
+Таким чином, чим більше символів між справжнім та декодованим станами збігаються, тим меншою буде відповідна відстань Геммінга $d_H$. З гістограми результатів (Рис.~\ref{pic: viterbi decoding algorithm}) видно, що більш ніж $40\%$ усього ланцюга декодовано правильно. 
+\begin{figure}[H]\centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            symbolic x coords = {$d_H=0$,$d_H=1$,$d_H=2$,$d_H=3$,$d_H=4$,$d_H=5$},
+            x tick label style = {font=\footnotesize},
+            ymin=0.0,
+            xlabel = Значення відстані Геммінга,
+            ylabel = Частка серед елементів ланцюга,
+            ymajorgrids = true,
+            yminorgrids = true,
+            grid style = {draw=gray!30},
+            minor tick num = 4,
+            minor grid style = {draw=gray!10},
+            minor x tick style = {draw=none},
+        ]
+            \addplot [
+                ybar,
+                bar width=25pt,
+                fill=blue!80,
+                opacity=0.7,
+            ] coordinates {
+                ($d_H=0$,0.435) ($d_H=1$,0.345) ($d_H=2$,0.085) ($d_H=3$,0.135) ($d_H=4$,0.0) ($d_H=5$,0.0)
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Результати алгоритму декодування Вітербі}
+    \label{pic: viterbi decoding algorithm}
+\end{figure}
+
+Наявність інших $35\%$ помилок в одному символі може бути наслідком того, що одного елемента стану немає серед спостережуваних областей ланцюга. Крім того, оцінений параметр $\widehat{\,p\,}$ має похибку $\delta=0.0103$ відносно свого істинного значення, що також впливає на результати задачі декодування.
+
+\subsection*{Оцінка множини неявних індексів}
+
+В ролі множини неявних індексів було обрано набір $I_* = (2,3,5)$. В Табл.~\ref{table: dependence between |I_*| and T} показано збіжність змістовної та незміщеної оцінки~\eqref{eq: ||I*|| estimation} потужності $\widehat{|I_*|}$. 
+
+\begin{table}[H]\centering
+    \caption{Оцінка потужності $\widehat{|I_*|}$ при збільшенні довжини ланцюга $T$}
+    \begin{tblr}{
+            hlines, vlines,
+            colspec={cccccc},
+            row{1-3}={mode=math},
+        }
+        T               & 200    & 400    & 600    & 800    & 1000    \\
+        \widehat{\,p\,} & 0.1897 & 0.1917 & 0.2174 & 0.2193 & 0.2242  \\
+        \widehat{|I_*|} & 2      & 2      & 3      & 3      & 3       \\
+    \end{tblr}
+    \label{table: dependence between |I_*| and T}
+\end{table} 
+
+Бачимо, що довжини ланцюга $T=200$ недостатньо для отримання точної оцінки. Однак, оскільки обране значення $N$ є невеликим, для оцінки потужності множини неявних індексів в такому випадку можна використати емпіричну оцінку вигляду:
+\begin{equation*}
+    \widehat{|I_*|}=\max\limits_{1\leqslant t \leqslant T} Y^t_{I_*}
+\end{equation*}
+
+Застосуємо отримане значення потужності для виразу~\eqref{eq: I^ estimation}, щоб віднайти елементи, які безпосередньо входять в $I_*:$ як квадратична відстань~\eqref{eq: square average distance}, так і зважена відстань Жаккара~\eqref{eq: weighted Jaccard distance} вказали на сукупність $\widehat{I\,}=(2,3,4)$.
+
+У випадку, коли відстані вказують на різні результати, дилему можна вирішити шляхом збільшення $T$ та подальшого використання змістовної оцінки~\eqref{eq: ||I* cup H|| estimation} для визначення взаємного розташування елементів множини неявних індексів відносно спостережуваних індексів~\eqref{eq: example observed indexes}.
+
+\subsection*{Оцінка коефіцієнтів спотворення}
+
+Для кожної із спостережуваних областей~\eqref{eq: example observed indexes} змодельованого ланцюга було обрано такі ймовірності викривлення: $q = (q_1,\,q_2) = (0.05,\,0.1)$. 
+
+\begin{figure}[H]\centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            xlabel = Ітерації $n$ алгоритму,
+            ylabel = Значення параметра $p^{(n)}$,
+            grid = both,
+            grid style = {draw=gray!30},
+            minor tick num = 4,
+            minor grid style = {draw=gray!10},
+        ]
+            \addplot[blue!80, mark=*] table[x=n, y=p] {data/baum-welch distortions learning algorithm.txt};
+            \addplot[red, mark=*] table[x=n, y=p] {
+                n p
+                0 0.6
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Ітерації алгоритму Баума-Велша для оцінки параметра $p$, враховуючи спотворення спостережень}
+    \label{pic: p distortion baum-welch learning algorithm}
+\end{figure}
+
+\begin{figure}[H]\centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            xlabel = Значення $q^{(n)}_1$,
+            ylabel = Значення $q^{(n)}_2$,
+            grid = both,
+            grid style = {draw=gray!30},
+            minor tick num = 4,
+            minor grid style = {draw=gray!10},
+            x tick label style={
+                /pgf/number format/.cd,
+                fixed,
+                precision=2
+            }
+            % legend style={at={(0.05,0.95)}, anchor=north west, cells={anchor=west}, draw=none},
+        ]
+            \addplot[blue!80, mark=*] table[x=q1, y=q2] {data/baum-welch distortions learning algorithm.txt};
+            \addplot[red, mark=*] table[x=q1, y=q2] {
+                n p q1 q2
+                0 0.6 0.3 0.4
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Ітерації алгоритму Баума-Велша для оцінки компонент вектора $q$, враховуючи спотворення спостережень}
+    \label{pic: q distortion baum-welch learning algorithm}
+\end{figure}
+
+\newpage
+Рис.~\ref{pic: p distortion baum-welch learning algorithm} та Рис.~\ref{pic: q distortion baum-welch learning algorithm} демонструють результати переоцінки невідомих параметрів моделі. Червоним кольором позначене початкове наближення $p^{(0)}=0.6$ та $q^{(0)}=(0.3,\,0.4)$. 
+
+Для досягнення аналогічної точності переоцінки $\varepsilon=0.0001$ оцінюваного параметра $p$ у випадку спотворенних даних знадобилося $n=63$ ітерацій алгоритму.   При цьому, помітне збільшення похибки: отримане значення $\widehat{\,p\,}=0.1575$ відрізняється від свого істинного значення $p=0.2$ на суттєво вищий показник $\delta=0.0425$. 
+
+В той же час, точність оцінки коефіцієнтів спостворення $\widehat{q\,} = \left( \widehat{q\,}_1,\,\widehat{q\,}_2 \right) = (0.0552,\,0.0752)$ є високою: $\delta=(\delta_1,\,\delta_2)=(0.0052,\,0.0248)$.
+
+%%% --------------------------------------------------------
+\section*{Висновки}
+%%% --------------------------------------------------------
+
+В роботі було розглянуто задачу оцінювання певних характеристик ланцюга Маркова, змодельованого на бінарних послідовностях фіксованої довжини: невідомі параметри моделі були оцінені або шляхом побудови змістовних та незміщених статистичних оцінок, або за допомогою ітераційного алгоритму Баума-Велша.
+
+Результати чисельного експерименту продемонстрували ефективність використаних методів, зокрема збіжність побудованих оцінок до істинних значень параметрів.
+
+\end{document}
