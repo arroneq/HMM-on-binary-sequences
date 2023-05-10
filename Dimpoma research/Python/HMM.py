@@ -1689,6 +1689,8 @@ def display_x_viterbi_results_by_mismatch_indexes(hamming_distances,mismatch_ind
                 width=0.5,
             )
 
+            # print(f"height: {height}")
+
         elif len(hamming_distances) != 1:
             if sum(hd_distribution) != 0:
                 ax1.hist(
@@ -1813,8 +1815,6 @@ def display_x_viterbi_results_by_groups_of_mismatch_indexes(hamming_distances,mi
                 height, 
                 width=0.5,
             )
-
-            print(f"height: {height}")
 
         elif len(hamming_distances) != 1:
             if sum(hd_distribution) != 0:

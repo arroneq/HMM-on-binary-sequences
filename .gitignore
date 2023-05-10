@@ -4,8 +4,14 @@
 !/Dimpoma research/Python/HMM.py
 
 /Scientific student conference/Theses/*
-!/Scientific student conference/Theses/data
+!/Scientific student conference/Theses/data/*
 !/Scientific student conference/Theses/*.tex
 !/Scientific student conference/Theses/*.cls
 !/Scientific student conference/Theses/*.bib
 !/Scientific student conference/Theses/*.pdf
+
+/Scientific student conference/Presentation/*
+!/Scientific student conference/Presentation/tikzplot
+!/Scientific student conference/Presentation/data
+!/Scientific student conference/Presentation/*.tex
+!/Scientific student conference/Presentation/*.pdf

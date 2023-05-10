@@ -1,0 +1,10 @@
+\begin{tikzpicture}[scale=1.5]
+        \node[style={circle, draw=black, very thick}] (x1) at (0,0) {$x_1$};
+        \node[style={circle, draw=black, very thick}] (x2) at (2,0) {$x_2$};
+        \node[style={circle, draw=black, very thick}] (x3) at (4,0) {$x_3$};
+        \node[style={circle, draw=black, very thick}] (x4) at (0,-2) {$x_4$};
+        \node[style={circle, draw=black, very thick}] (x5) at (2,-2) {$x_5$};;
+        
+        \draw[line width=1pt] (x1) -- node [left=0.3cm] {$q_2=0.1$} (x4);
+        \draw[line width=1pt] (x2) -- node [above=0.25cm] {$q_1=0.05$} (x3);
+\end{tikzpicture}
