@@ -88,63 +88,102 @@
 }
 
 %%% --------------------------------------------------------------------
+\section{Сфери застосування бінарних послідовностей}
+%%% --------------------------------------------------------------------
+
+\begin{frame}
+    \frametitle{\insertsection} 
+    \begin{itemize}
+        \item Еволюція ДНК в біології \vspace{1cm}
+        \item Бінарні послідовності в теорії інформації \vspace{1cm}
+        \item Спінові системи у фізиці
+    \end{itemize}
+\end{frame}
+
+%%% --------------------------------------------------------------------
 \section{Моделювання об'єкту дослідження}
 %%% --------------------------------------------------------------------
 
 \begin{frame}
     \frametitle{\insertsection}
+    Еволюцію бінарної послідовності довжини $N$ уявимо як випадкове блукання вершинами $N$-\,вимірного куба.  
+    \begin{figure}[H]\centering
+        \input{tikzplot/unit cube.tikz}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\insertsection}
+    Ліниве блукання: з імовірністю $p$ залишаємося на місці, з імовірністю $\frac{1-p}{N}$ переходимо в сусідню вершину.
     \begin{columns}
         \begin{column}{0.6\linewidth}
-            \begin{overprint}
-                \onslide<1-2>\centerline{\input{tikzplot/unit cube.tikz}}
-                \onslide<3-4>\centerline{\input{tikzplot/modified unit cube.tikz}}
-            \end{overprint}
+            \begin{figure}[H]\centering
+                \input{tikzplot/red path in unit cube.tikz}
+            \end{figure}
         \end{column}
         \begin{column}{0.4\linewidth}
-            \begin{overprint}
-                \onslide<2-3>
-                \begin{tblr}{
-                        colspec={cc},
-                        column{1,2}={mode=math},
-                    }
-                        & x^t     \\
-                    t=1 & (0,1,1) \\
-                    t=2 & (0,1,0) \\
-                    t=3 & (1,1,0) \\
-                    t=4 & (1,0,0) \\
-                \end{tblr}
-                \onslide<4>
-                \begin{tblr}{
-                        colspec={ccc},
-                        column{1,2,3}={mode=math},
-                    }
-                        & x^t                                                                       & y^t   \\
-                    t=1 & (\textcolor{brown}{0},\textcolor{brown}{1},\textcolor{green!60!black}{1}) & (1,1) \\
-                    t=2 & (\textcolor{brown}{0},\textcolor{brown}{1},\textcolor{green!60!black}{0}) & (1,0) \\
-                    t=3 & (\textcolor{brown}{1},\textcolor{brown}{1},\textcolor{green!60!black}{0}) & (2,0) \\
-                    t=4 & (\textcolor{brown}{1},\textcolor{brown}{0},\textcolor{green!60!black}{0}) & (1,0) \\
-                \end{tblr}
-            \end{overprint}
+            \begin{tblr}{
+                    colspec={cc},
+                    column{1,2}={mode=math},
+                }
+                    & x^t     \\
+                t=1 & (0,1,1) \\
+                t=2 & (0,1,0) \\
+                t=3 & (1,1,0) \\
+                t=4 & (1,0,0) \\
+            \end{tblr}
         \end{column}
     \end{columns}
 \end{frame}
 
 \begin{frame}
-    \frametitle{\insertsection}\centering
-    \begin{tblr}{
-            colspec={ccc},
-            column{1,2,3}={mode=math},
-        }
-            & x^t                                                                                    & y^t  \\
-        t=1 & \textcolor{brown}{010}01\textcolor{green!60!black}{11}01\textcolor{green!60!black}{101} & (1,4) \\
-        t=2 & \textcolor{brown}{011}01\textcolor{green!60!black}{11}01\textcolor{green!60!black}{101} & (2,4) \\
-        t=3 & \textcolor{brown}{011}01\textcolor{green!60!black}{11}11\textcolor{green!60!black}{101} & (2,4) \\
-        t=4 & \textcolor{brown}{011}01\textcolor{green!60!black}{11}11\textcolor{green!60!black}{111} & (2,5) \\
-    \end{tblr}
+    \frametitle{\insertsection}
+    $\left\{ X^t \right\}_{t=\overline{1,T}}$ є ланцюгом Маркова зі станами в $E=\{0,1\}^N$ з початковим рівномірним розподілом $\pi:$
+    \begin{equation*}
+        \pi_{x}=P\left( X^{1}=x \right) = \frac{1}{2^N}
+    \end{equation*}
+    та матрицею перехідних імовірностей $A:$ 
+    \begin{equation*}
+        A_{xx'}=P\left( X^{t+1}=x'\,|\,X^{t}=x \right) = 
+        \begin{cases*}
+            p, & $d_H(x,x')=0$\\
+            \tfrac{1-p}{N}, & $d_H(x,x')=1$ \\ 
+            0, & інакше
+        \end{cases*}
+    \end{equation*}
 \end{frame}
 
 \begin{frame}
-    \frametitle{\insertsection}\centering
+    \frametitle{\insertsection}
+    Спостерігаємо набір функціоналів 
+    \begin{equation*} 
+        Y^t=(Y^t_1,\ldots,Y^t_L)=(\sum\limits_{i \in I_1}X^t_i,\ldots,\sum\limits_{i \in I_L}X^t_i),
+    \end{equation*} 
+    де $I_1,\ldots,I_L$ є заданими підмножинами $\{ 1,2,\ldots,N \}$.
+    \vspace{0.5cm}
+
+    \pause
+    Наприклад, $N=12$, $I_1=(1,2,3)$, $I_2=(6,7,10,11,12)$
+    \begin{table}\centering
+        \begin{tblr}{
+                colspec={ccc},
+                column{1,2,3}={mode=math},
+            }
+                & x^t & y^t \\
+            t=1 & \textcolor{orange!90!black}{010}01\textcolor{green6}{11}01\textcolor{green6}{101} 
+                & (\textcolor{orange!90!black}{1},\textcolor{green6}{4}) \\
+            t=2 & \textcolor{orange!90!black}{011}01\textcolor{green6}{11}01\textcolor{green6}{101} 
+                & (\textcolor{orange!90!black}{2},\textcolor{green6}{4}) \\
+            t=3 & \textcolor{orange!90!black}{011}01\textcolor{green6}{11}11\textcolor{green6}{101} 
+                & (\textcolor{orange!90!black}{2},\textcolor{green6}{4}) \\
+            t=4 & \textcolor{orange!90!black}{011}01\textcolor{green6}{11}11\textcolor{green6}{111} 
+                & (\textcolor{orange!90!black}{2},\textcolor{green6}{5}) \\
+        \end{tblr}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\insertsection}
     \begin{claim}
         Послідовність $\left\{ \left( X^t,Y^t \right) \right\}_{t=\overline{1,T}}$ утворює приховану марковську модель $\left( \pi,A,B \right)$, де 
         \begin{equation*}
@@ -154,54 +193,49 @@
 \end{frame}
 
 %%% --------------------------------------------------------------------
-\section{Постановка задачі}
+\section{Побудова оцінок невідомих параметрів}
 %%% --------------------------------------------------------------------
 
-\begin{frame}[t]
-    \frametitle{\insertsection}
+\begin{frame}
+    \frametitle{Постановка задачі}
     \begin{enumerate}[1]
-        \item Оцінити параметр $p$ та декодувати послідовність станів прихованого ланцюга;
+        \item Оцінити параметр $p$ за набором спостережень та декодувати послідовність станів прихованого ланцюга;
     \end{enumerate}
-    \vspace{1cm}
+    \vspace{0.5cm}
 
     \pause
-    Метод максимальної правдоподібності:
+    Метод максимальної правдоподібності
     \begin{equation*}
         P\, \bigl( Y=y \,|\, p \bigr) = \sum_{x \in E^T} P\, \bigl( X=x,Y=y \,|\, p \bigr) \longrightarrow \max
     \end{equation*}
 
-    \pause
+    Функція повної правдоподібності
+    \begin{equation*}
+        L_{p,x,y} = P\, \bigl( X=x,Y=y \,|\, p \bigr)
+    \end{equation*}
+
     Відтак
     \begin{equation*}
         \widehat{\,p\,} = \argmax\limits_{p} \sum_{x \in E^T} L_{p,x,y}
     \end{equation*}
 \end{frame}
 
-\begin{frame}[t]
+\begin{frame}
     \frametitle{\insertsection}
-    \begin{enumerate}[1]
-        \item Оцінити параметр $p$ та декодувати послідовність станів прихованого ланцюга;
-    \end{enumerate}
-    \vspace{1cm}
 
     Ітераційний алгоритм Баума-Велша: 
     \begin{equation*}
         Q\left( p^{(n)},p \right) = \sum_{x \in E^T}L_{p^{(n)},x,y}\cdot\ln L_{p,x,y} \longrightarrow \max
     \end{equation*}
 
-    \pause
     Тож починаючи з деякого $p^{(0)}$
     \begin{equation*}
         p^{(n+1)} = \argmax\limits_{p} Q\left( p^{(n)},p \right)
     \end{equation*}
 \end{frame}
 
-\begin{frame}[t]
+\begin{frame}
     \frametitle{\insertsection}
-    \begin{enumerate}[1]
-        \item Оцінити параметр $p$ та декодувати послідовність станів прихованого ланцюга;
-    \end{enumerate}
-    \vspace{1cm}
 
     Формула переоцінки параметра $p:$
     \begin{equation*}
@@ -214,55 +248,52 @@
     \end{align*}
 \end{frame}
 
-\begin{frame}[t]
+\begin{frame}
     \frametitle{\insertsection}
-    \begin{enumerate}[1]
-        \item Оцінити параметр $p$ та декодувати послідовність станів прихованого ланцюга;
-    \end{enumerate}
-    \vspace{1cm}
 
     Алгоритм Вітербі: пошук такої послідовності прихованих станів $\widehat{X}^1,\widehat{X}^2,\ldots,\widehat{X}^T$, яка найкращим чином описує наявні спостереження:
     \begin{equation*}
         \widehat{X} = \argmax\limits_{x \in E^T} P\left( X=x\,|\,Y=y,\widehat{\,p\,} \right)
     \end{equation*}
-\end{frame}
+\end{frame} 
 
 \begin{frame}[t]
-    \frametitle{\insertsection}\centering
+    \frametitle{Постановка задачі}
     \begin{enumerate}[2]
-        \item Відтворити елементи <<множини неявних індексів>> $I_*$;
+        \item Спостерігаємо значення $Y^t_{I_*}=\sum\limits_{i \in I_*}X^t_i$, де $I_*$~--- деяка невідома підмножина множини індексів.
     \end{enumerate}
-    \vspace{1cm}
+    \vspace{0.25cm}
 
     \pause
-    \begin{tblr}{
-        colspec={cccc},
-        column{1-4}={mode=math},
-    }
-
+    Наприклад, $N=12$, $I_1=(1,2,3)$, $I_2=(6,7,10,11,12)$, $I_*=?$
+    \begin{center}
+        \begin{tblr}{
+            colspec={cccc},
+            column{1-4}={mode=math},
+        }
         & x^t & y^t & y^t_{I_*} \\
-    t=1 & \textcolor{brown}{010}01\textcolor{green!60!black}{11}01\textcolor{green!60!black}{101} 
-        & (1,4) 
-        & 3 \\
-    t=2 & \textcolor{brown}{011}01\textcolor{green!60!black}{11}01\textcolor{green!60!black}{101} 
-        & (2,4) 
-        & 3 \\
-    t=3 & \textcolor{brown}{011}01\textcolor{green!60!black}{11}11\textcolor{green!60!black}{101} 
-        & (2,4) 
-        & 4 \\
-    t=4 & \textcolor{brown}{011}01\textcolor{green!60!black}{11}11\textcolor{green!60!black}{111} 
-        & (2,5) 
-        & 4 \\
-    
-    \end{tblr}  
+        t=1 & \textcolor{orange!90!black}{010}01\textcolor{green6}{11}01\textcolor{green6}{101} 
+            & (\textcolor{orange!90!black}{1},\textcolor{green6}{4}) 
+            & 3 \\
+        t=2 & \textcolor{orange!90!black}{011}01\textcolor{green6}{11}01\textcolor{green6}{101} 
+            & (\textcolor{orange!90!black}{2},\textcolor{green6}{4}) 
+            & 3 \\
+        t=3 & \textcolor{orange!90!black}{011}01\textcolor{green6}{11}11\textcolor{green6}{101} 
+            & (\textcolor{orange!90!black}{2},\textcolor{green6}{4}) 
+            & 4 \\
+        t=4 & \textcolor{orange!90!black}{011}01\textcolor{green6}{11}11\textcolor{green6}{111} 
+            & (\textcolor{orange!90!black}{2},\textcolor{green6}{5}) 
+            & 4 \\
+        \end{tblr}
+    \end{center}  
+    \vspace{0.25cm}
+
+    \pause
+    Яким чином можна відтворити елементи множини $I_*$ за спостереженнями $Y^1_{I_*},\ldots,Y^T_{I_*}$?;
 \end{frame}
 
-\begin{frame}[t]
+\begin{frame}
     \frametitle{\insertsection}\centering
-    \begin{enumerate}[2]
-        \item Відтворити елементи <<множини неявних індексів>> $I_*$;
-    \end{enumerate}
-    \vspace{1cm}
 
     \begin{claim}
         Змістовною і незміщеною оцінкою потужності множини $I_*$ є статистика
@@ -272,75 +303,96 @@
     \end{claim}
 \end{frame}
 
-\begin{frame}[t]
+\begin{frame}
     \frametitle{\insertsection}
-    \begin{enumerate}[2]
-        \item Відтворити елементи <<множини неявних індексів>> $I_*$;
-    \end{enumerate}
-    \vspace{1cm}
 
     Визначення компонент множини $I_*:$
     \begin{equation*}
         \widehat{I\,} = \argmin\limits_{1\leqslant k \leqslant C^{\widehat{|I_*|}}_N}{d\left( \widehat{Y\,}_{\mathtt{I_k}}, Y_{I_*} \right)},
     \end{equation*}
 
+    тут 
+    \begin{equation*}
+        \widehat{Y\,}_{\mathtt{I_k}}=\sum\limits_{i \in \mathtt{I_k}}\widehat{X}^t_i
+    \end{equation*}
+    є сумою від декодованих елементів прихованого ланцюга.
+    \vspace{0.8cm}
+
     \pause
-    де
+    Що обрати в ролі міри близькості $d$?
+\end{frame}
+
+\begin{frame}
+    \frametitle{\insertsection}
+
+    Середньоквадратична відстань
     \begin{equation*}
         d_{S}\left( \widehat{Y\,}_{\mathtt{I_k}},Y_{I_*} \right) = \sum_{t=1}^{T}\left( \widehat{Y\,}^t_{\mathtt{I_k}} - Y^t_{I_*} \right)^2
     \end{equation*}
+
+    Зважена відстань Жаккара
     \begin{equation*}
         d_{J}\left( \widehat{Y\,}_{\mathtt{I_k}},Y_{I_*} \right) = 1 - \frac{\sum\limits_{t=1}^{T}\min{\left( \widehat{Y\,}^t_{\mathtt{I_k}},Y^t_{I_*} \right)}}{\sum\limits_{t=1}^{T}\max{\left( \widehat{Y\,}^t_{\mathtt{I_k}},Y^t_{I_*} \right)}}
     \end{equation*}
 \end{frame}
 
 \begin{frame}[t]
-    \frametitle{\insertsection}\centering
+    \frametitle{Постановка задачі}
     \begin{enumerate}[3]
-        \item Оцінити невідомий параметр моделі $p$ при ймовірностях спотворення $q_1,q_2,\ldots,q_L$.
+        \item Спостереження на множинах $I_1,\ldots,I_L$ спотворюються ймовірностями $q_1,\ldots,q_L:$
     \end{enumerate}
-    \vspace{0.5cm}
 
-    \begin{tblr}{
-        colspec={ccccc},
-        column{1-5}={mode=math},
-    }
-
-        & x^t & \widetilde{x}^t & y^t & q \\
-    t=1 & \textcolor{brown}{010}01\textcolor{green!60!black}{11}01\textcolor{green!60!black}{101} 
-        & 0\textcolor{red}{0}0011101101 
-        & (0,4) 
-        & (q_1,q_2) \\
-    t=2 & \textcolor{brown}{011}01\textcolor{green!60!black}{11}01\textcolor{green!60!black}{101} 
-        & 01\textcolor{red}{0}011101101 
-        & (1,4) 
-        & (q_1,q_2) \\
-    t=3 & \textcolor{brown}{011}01\textcolor{green!60!black}{11}11\textcolor{green!60!black}{101} 
-        & \textcolor{red}{1}110111111\textcolor{red}{1}1 
-        & (3,5)
-        & (q_1,q_2) \\
-    t=4 & \textcolor{brown}{011}01\textcolor{green!60!black}{11}11\textcolor{green!60!black}{111} 
-        & 0110111111\textcolor{red}{00} 
-        & (2,3) 
-        & (q_1,q_2) \\
-    
-    \end{tblr}
-    \pause  
     \begin{equation*}
-        \forall i \in I_1: \quad \widetilde{X}^t_i =
+        Y^t=\left( Y^t_k \right)_{k=\overline{1,L}} = \left( \sum_{i \in I_k} \widetilde{X}^t_i \right)_{k=\overline{1,L}}
+    \end{equation*}
+    де для $i \in I_k$
+    \begin{equation*}
+        \widetilde{X}^t_i =
         \begin{cases*}
-            1 - X^t_i, & з імовірністю $q_1$ \\
-            X^t_i, & з імовірністю $1 - q_1$ \\
+            1 - X^t_i, & з імовірністю $q_k$ \\
+            X^t_i, & з імовірністю $1 - q_k$ \\
         \end{cases*}
     \end{equation*}
+    \vspace{0.25cm}
+
+    Оцінити невідомий параметр моделі $p$ та ймовірності спотворень $q_1,q_2,\ldots,q_L$.
 \end{frame}
 
-\begin{frame}[t]
+\begin{frame}
     \frametitle{\insertsection}
-    \begin{enumerate}[3]
-        \item Оцінити невідомий параметр моделі $p$ при ймовірностях спотворення $q_1,q_2,\ldots,q_L$.
-    \end{enumerate}
-    \vspace{0.5cm}
+    
+    Наприклад, $N=12$, $I_1=(1,2,3)$, $I_2=(6,7,10,11,12)$
+
+    \begin{center}
+        \begin{tblr}{
+            colspec={ccccc},
+            column{1-5}={mode=math},
+        }
+
+            & x^t & \widetilde{x}^t & y^t & q \\
+        t=1 & 010011101101 
+            & 0\textcolor{red}{0}0011101101 
+            & (0,4) 
+            & (q_1,q_2) \\
+        t=2 & 011011101101 
+            & 01\textcolor{red}{0}011101101 
+            & (1,4) 
+            & (q_1,q_2) \\
+        t=3 & 011011111101 
+            & \textcolor{red}{1}110111111\textcolor{red}{1}1 
+            & (3,5)
+            & (q_1,q_2) \\
+        t=4 & 011011111111 
+            & 0110111111\textcolor{red}{00} 
+            & (2,3) 
+            & (q_1,q_2) \\
+        
+        \end{tblr}
+    \end{center}
+\end{frame}
+
+\begin{frame}   
+    \frametitle{\insertsection}
 
     \begin{claim}
         Якщо множини $I_1,\ldots,I_L$ є попарно неперетинними, то утворена послідовність $\left\{ \left( X^t,Y^t \right) \right\}_{t=\overline{1,T}}$ є прихованою марковською моделлю $\left( \pi,A,B^q \right)$, де 
@@ -355,14 +407,12 @@
 
 \begin{frame}[t]
     \frametitle{\insertsection}
-    \begin{enumerate}[3]
-        \item Оцінити невідомий параметр моделі $p$ при ймовірностях спотворення $q_1,q_2,\ldots,q_L$.
-    \end{enumerate}
-    \vspace{0.5cm}
 
+    Починаючи з деякого наближення моделі $\left( \pi,A^{(0)},B^{q^{(0)}} \right)$, формула переоцінки параметра $p:$
     \begin{equation*}
         p^{(n+1)} = p^{(n)}\cdot\frac{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,B^{q^{(n)}}_{xy^{t+1}}\,\beta_{t+1}(x)}{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)}
     \end{equation*}
+    Формула переоцінки компонент вектора $q:$
     \begin{equation*}
         q_k^{(n+1)} = q_k^{(n)}\cdot\frac{\sum\limits_{t=1}^{T}\sum\limits_{x \in E}\beta_{t}(x)\sum\limits_{x' \in E} \alpha_{t-1}(x')\,A^{(n)}_{x'x}\sum\limits_{i \in I_k}P^{q^{(n)}}_{x,i}}{|I_k|\sum\limits_{t=1}^{T}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)}
     \end{equation*}
@@ -375,7 +425,6 @@
 \begin{frame}[t]
     \frametitle{\insertsection}
     Було згенеровано прихований ланцюг Маркова протягом $T=200$ моментів часу, $N=5$ та $p=0.2$. Множина спостережуваних індексів: $I=\{I_1,I_2\}=\{(2,3),(1,4)\}$.
-    \vspace{1cm}
 
     \begin{figure}[H]\centering
         \input{tikzplot/input model.tikz}
@@ -385,26 +434,24 @@
 \begin{frame}[t]
     \frametitle{\insertsection}
     \begin{enumerate}[1]
-        \item Оцінити параметр $p$ та декодувати послідовність станів прихованого ланцюга;
+        \item Оцінити параметр $p$ за набором спостережень та декодувати послідовність станів прихованого ланцюга;
     \end{enumerate}
 
     \begin{columns}
-        \begin{column}{0.65\linewidth}
+        \begin{column}{0.62\linewidth}
             \begin{figure}[H]
                 \input{tikzplot/p estimation.tikz}
             \end{figure}
         \end{column}
-        \begin{column}{0.35\linewidth}
+        \begin{column}{0.38\linewidth}
             \begin{tblr}{
                 hlines,vlines,
                 colspec={ccc},
                 column{1-3}={mode=math},
-                column{2}={l},
-                cell{1}{3}={r=2,c=1}{c},
             }
 
-            p               & 0.2    & 0.0041 \\
-            \widehat{\,p\,} & 0.1959 &        \\
+            p   & \widehat{\,p\,} & |p-\widehat{\,p\,}| \\
+            0.2 & 0.1959          & 0.0041              \\
 
             \end{tblr}
         \end{column}
@@ -414,12 +461,22 @@
 \begin{frame}[t]
     \frametitle{\insertsection}
     \begin{enumerate}[1]
-        \item Оцінити параметр $p$ та декодувати послідовність станів прихованого ланцюга;
+        \item Оцінити параметр $p$ за набором спостережень та декодувати послідовність станів прихованого ланцюга;
     \end{enumerate}
 
-    \begin{figure}[H]
-        \input{tikzplot/decoding task.tikz}
-    \end{figure}
+    \begin{columns}
+        \begin{column}{0.62\linewidth}
+            \begin{figure}[H]
+                \input{tikzplot/decoding task.tikz}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.38\linewidth}
+            \begin{equation*}\scaleq[0.8]{
+                d_H\left( X^t,\widehat{X^t} \right) = \sum\limits_{i=1}^{N} \mathbbm{1}\left( X^t_i \neq \widehat{X^t_i} \right)
+                }
+            \end{equation*}
+        \end{column}
+    \end{columns}
 \end{frame}
 
 \begin{frame}[t]
@@ -427,7 +484,9 @@
     \begin{enumerate}[2]
         \item Відтворити елементи <<множини неявних індексів>> $I_*$;
     \end{enumerate}
-    \vspace{1cm}
+    \vspace{0.5cm}
+
+    Спостереження $I=\{I_1,I_2\}=\{(2,3),(1,4)\}$, неявні індекси покладемо $I_*=(1,3,5):$
 
     \begin{figure}[H]\centering
         \input{tikzplot/implicit indices.tikz}
@@ -439,9 +498,10 @@
     \begin{enumerate}[2]
         \item Відтворити елементи <<множини неявних індексів>> $I_*$;
     \end{enumerate}
+    \vspace{0.5cm}
 
+    Залежність значення оцінки від довжини ланцюга
     \begin{table}
-        \caption{Збіжність змістовної оцінки}
         \begin{tblr}{
             hlines,vlines,
             colspec={cccccc},
@@ -454,32 +514,37 @@
 
         \end{tblr}
     \end{table}
+    \vspace{0.5cm}
 
     \pause
-    \begin{columns}
-        \begin{column}{0.5\linewidth}\
-            \begin{equation*}
-                \widehat{|I_*|}=\max\limits_{1\leqslant t \leqslant T} Y^t_{I_*}
-            \end{equation*}
-        \end{column}
-        \pause
-        \begin{column}{0.5\linewidth}\centering
-            Отримані результати
-            \begin{table}
-                \begin{tblr}{
-                    hlines,vlines,
-                    colspec={cccccc},
-                    row{1-3}={mode=math},
-                }
-        
-                I_*             & (1,3,5) \\
-                \widehat{I\,}_S & (1,2,5) \\
-                \widehat{I\,}_J & (1,2,3) \\
-        
-                \end{tblr}
-            \end{table}
-        \end{column}
-    \end{columns}
+    При малих $N$ можна використати оцінку
+    \begin{equation*}
+        \widehat{|I_*|}_{\max}=\max\limits_{1\leqslant t \leqslant T} Y^t_{I_*}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    \begin{enumerate}[2]
+        \item Відтворити елементи <<множини неявних індексів>> $I_*$;
+    \end{enumerate}
+    \vspace{0.5cm}
+
+    Отримані результати:
+
+    \begin{table}
+        \begin{tblr}{
+            hlines,vlines,
+            colspec={lc},
+            column{2}={mode=math},
+        }
+
+        Істинна множина $I_*$                                      & (1,3,5) \\
+        Оцінка $\widehat{I\,}_S$ за середньоквадратичною відстанню & (1,2,5) \\
+        Оцінка $\widehat{I\,}_J$ за зваженою відстанню Жаккара     & (1,2,3) \\
+
+        \end{tblr}
+    \end{table}
 \end{frame}
 
 \begin{frame}[t]
@@ -487,7 +552,9 @@
     \begin{enumerate}[3]
         \item Оцінити невідомий параметр моделі $p$ при ймовірностях спотворення $q_1,q_2,\ldots,q_L$.
     \end{enumerate}
-    \vspace{0.5cm}
+    \vspace{0.25cm}
+
+    Для $I_1,I_2$ було задано такі коефіцієнти спотворення:
 
     \begin{figure}[H]
         \input{tikzplot/distortion coefficients.tikz}
@@ -501,22 +568,20 @@
     \end{enumerate}
 
     \begin{columns}
-        \begin{column}{0.65\linewidth}
+        \begin{column}{0.6\linewidth}
             \begin{figure}[H]
                 \input{tikzplot/p distortion estimation.tikz}
             \end{figure}
         \end{column}
-        \begin{column}{0.35\linewidth}
+        \begin{column}{0.4\linewidth}
             \begin{tblr}{
                 hlines,vlines,
                 colspec={ccc},
                 column{1-3}={mode=math},
-                column{2}={l},
-                cell{1}{3}={r=2,c=1}{c},
             }
 
-            p               & 0.2    & 0.0559 \\
-            \widehat{\,p\,} & 0.2559 &        \\
+            p   & \widehat{\,p\,} & |p-\widehat{\,p\,}| \\
+            0.2 & 0.2559          & 0.0559              \\
 
             \end{tblr}
         \end{column}
@@ -530,22 +595,20 @@
     \end{enumerate}
 
     \begin{columns}
-        \begin{column}{0.65\linewidth}
+        \begin{column}{0.6\linewidth}
             \begin{figure}[H]
                 \input{tikzplot/q distortion estimation.tikz}
             \end{figure}
         \end{column}
-        \begin{column}{0.35\linewidth}
+        \begin{column}{0.4\linewidth}
             \begin{tblr}{
                 hlines,vlines,
                 colspec={ccc},
                 column{1-3}={mode=math},
-                column{2}={l},
-                cell{1}{3}={r=2,c=1}{c},
             }
 
-            q_1             & 0.05    & 0.0046 \\
-            \widehat{q\,}_1 & 0.0454 &         \\
+            q_1   & \widehat{q\,}_1 & |q_1-\widehat{q\,}_1| \\
+            0.05  & 0.0454          & 0.0046                \\
 
             \end{tblr}
             
@@ -555,16 +618,31 @@
                 hlines,vlines,
                 colspec={ccc},
                 column{1-3}={mode=math},
-                column{2}={l},
-                cell{1}{3}={r=2,c=1}{c},
             }
 
-            q_2             & 0.1    & 0.0184 \\
-            \widehat{q\,}_2 & 0.1184 &        \\
+            q_2     & \widehat{q\,}_2 & |q_2-\widehat{q\,}_2| \\
+            0.1\,\  & 0.1184          & 0.0184                \\
 
             \end{tblr}
         \end{column}
     \end{columns}
+\end{frame}
+
+%%% --------------------------------------------------------------------
+\section*{Висновки}
+%%% --------------------------------------------------------------------
+
+\begin{frame}
+    \frametitle{\insertsection} 
+    
+    Невідомі параметри заданої моделі були оцінені 
+    \begin{itemize}
+        \item або шляхом побудови змістовних та незміщених статистичних оцінок;
+        \item або за допомогою ітераційного алгоритму Баума-Велша.
+    \end{itemize}
+    \vspace{0.5cm}
+
+    Результати чисельного експерименту продемонстрували ефективність використаних методів, зокрема збіжність побудованих оцінок до істинних значень параметрів при збільшенні кількості спостережень.
 \end{frame}
 
 \end{document}

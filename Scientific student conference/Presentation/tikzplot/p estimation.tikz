@@ -1,7 +1,7 @@
 \begin{tikzpicture}[scale=0.8]
     \begin{axis}[
-        xlabel = Ітерації $n$ алгоритму,
-        ylabel = Значення параметра $p^{(n)}$,
+        xlabel = Ітерації алгоритму,
+        ylabel = Значення параметра $\widehat{\,p\,}$,
         grid = both,
         ymax = 0.62,
         grid style = {draw=gray!30},
