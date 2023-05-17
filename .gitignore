@@ -1,17 +1,17 @@
-/Dimpoma research/Python/*
-!/Dimpoma research/Python/images
-!/Dimpoma research/Python/GUI main.py
-!/Dimpoma research/Python/HMM.py
+*/*/*
 
-/Scientific student conference/Theses/*
-!/Scientific student conference/Theses/data/*
-!/Scientific student conference/Theses/*.tex
-!/Scientific student conference/Theses/*.cls
-!/Scientific student conference/Theses/*.bib
-!/Scientific student conference/Theses/*.pdf
+!/Dimpoma research/Algorithm implementation/images
+!/Dimpoma research/Algorithm implementation/GUI main.py
+!/Dimpoma research/Algorithm implementation/HMM.py
 
-/Scientific student conference/Presentation/*
+!/Dimpoma research/Diploma thesis/Chapters
+!/Dimpoma research/Diploma thesis/Images
+
+!/Scientific student conference/Theses/data
 !/Scientific student conference/Presentation/tikzplot
 !/Scientific student conference/Presentation/data
-!/Scientific student conference/Presentation/*.tex
-!/Scientific student conference/Presentation/*.pdf
+
+!*.tex
+!*.cls
+!*.bib
+!*.pdf
