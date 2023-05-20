@@ -1,0 +1,12 @@
+\begin{tikzpicture}[scale=1.5]
+    \node[style={circle, draw=black, very thick}] (x1) at (0,0) {$x_1$};
+    \node[style={circle, draw=black, very thick}] (x2) at (2,0) {$x_2$};
+    \node[style={circle, draw=black, very thick}] (x3) at (4,0) {$x_3$};
+    \node[style={circle, draw=black, very thick}] (x4) at (0,-2) {$x_4$};
+    \node[style={circle, draw=black, very thick}] (x5) at (2,-2) {$x_5$};;
+
+    \draw[green6,very thick] (3,0) ellipse (1.7cm and 0.55cm) 
+        node[black,xshift=3.3cm,yshift=0.8cm] {$q_1=0.05$};
+    \draw[orange!90!black,very thick] (0,-1) ellipse (0.55cm and 1.7cm)
+        node[black,xshift=-2cm] {$q_2=0.1$};
+\end{tikzpicture}

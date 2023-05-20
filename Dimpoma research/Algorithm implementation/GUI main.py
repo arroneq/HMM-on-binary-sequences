@@ -1,11 +1,13 @@
 import HMM
 
+import PySimpleGUI as sg
+
 import copy
 import random
 import time
 import numpy as np
+
 import pandas as pd
-import PySimpleGUI as sg
 import matplotlib.pyplot as plt
 import cv2
 
@@ -36,7 +38,7 @@ decoding_mode_tooltip = "You may choose: \
     \n* once only : run algorithm for the estimation with maximum P(Y=y) value among restarts  \
     \n* for each restart : run algorithm for each restart to make a statistical analysis"
 
-initializing_column = [
+initialization_column = [
     [
         sg.Frame(
             layout=[
@@ -49,7 +51,7 @@ initializing_column = [
                     sg.Text("First initiate state", size=(25, 1)), 
                     sg.Text("x0 =", size=(4, 1)), 
                     sg.Combo(
-                        ["", "random"],
+                        ["","random"],
                         default_value="random",
                         readonly=False,
                         tooltip=x0_tooltip,
@@ -75,21 +77,21 @@ initializing_column = [
         )
     ],    
     [
-        sg.Button("VIEW STATE GRAPH", size=(41, 1), key="-VIEW STATE GRAPH-"),
+        sg.Button("VIEW STATE SHAPE", size=(41, 1), key="-VIEW STATE SHAPE-"),
     ],
     [
         sg.Frame(
             layout=[
                 [
-                    sg.Text("Observed indexes", size=(21, 1)), 
+                    sg.Text("Observed indices", size=(21, 1)), 
                     sg.Text("I =", size=(3, 1)), 
                     sg.InputText(size=(16, 1), default_text="[[1,2],[0,3]]", key="-OBSERVED INDEXES-"),
                 ], 
                 [
-                    sg.Text("Implicit indexes", size=(21, 1)), 
+                    sg.Text("Implicit indices", size=(21, 1)), 
                     sg.Text("I* =", size=(3, 1)), 
                     sg.Combo(
-                        ["none", "[0,2,4]"],
+                        ["none","[0,2,4]"],
                         default_value="[0,2,4]",
                         readonly=False,
                         tooltip=implicit_I_tooltip,
@@ -101,7 +103,7 @@ initializing_column = [
                     sg.Text("Distortion coefficients", size=(21, 1)), 
                     sg.Text("q =", size=(3, 1)), 
                     sg.Combo(
-                        ["none", "[0.05, 0.1]"],
+                        ["none","[0.05, 0.1]"],
                         default_value="none",
                         readonly=False,
                         tooltip=q_tooltip,
@@ -117,10 +119,10 @@ initializing_column = [
         )
     ],
     [
-        sg.Button("VIEW OBSERVATIONS GRAPH", size=(41, 1), key="-VIEW OBSERVATIONS GRAPH-"),
+        sg.Button("VIEW OBSERVED STATE SHAPE", size=(41, 1), key="-VIEW OBSERVED STATE SHAPE-"),
     ],
     [
-        sg.Image(filename="../Python/images/empty_graph.png", key="-GRAPH-")
+        sg.Image(filename="Images/empty_graph.png", key="-GRAPH-")
     ],
 ]
 
@@ -132,7 +134,7 @@ algorithms_column = [
                     sg.Text("Initial approximation", size=(31, 1)), 
                     sg.Text("p0 =", size=(4, 1)),
                     sg.Combo(
-                        ["0.55", "random"],
+                        ["0.55","random"],
                         default_value="random",
                         readonly=False,
                         tooltip=p0_tooltip,
@@ -144,7 +146,7 @@ algorithms_column = [
                     sg.Text("", size=(31, 1)), 
                     sg.Text("q0 =", size=(4, 1)),
                     sg.Combo(
-                        ["none", "[0.3, 0.4]", "random"],
+                        ["none","[0.3, 0.4]","random"],
                         default_value="none",
                         readonly=False,
                         tooltip=q0_tooltip,
@@ -155,7 +157,7 @@ algorithms_column = [
                 [
                     sg.Text("Learning algorithm stop criterion", size=(36, 1)), 
                     sg.Combo(
-                        ["20 iterations", "increments"],
+                        ["20 iterations","increments"],
                         default_value="20 iterations",
                         readonly=False,
                         tooltip=stop_criterion_tooltip,
@@ -254,7 +256,7 @@ algorithms_column = [
         )
     ],
     [
-        sg.Button("RUN ALGORITHM & VIEW RESULTS", size=(48, 1), key="-RUN DECODING ALGORITHM & VIEW DECODING RESULTS-"),
+        sg.Button("RUN DECODING ALGORITHM & VIEW RESULTS", size=(48, 1), key="-RUN DECODING ALGORITHM & VIEW RESULTS-"),
     ],
     [
         sg.Text("")
@@ -263,7 +265,7 @@ algorithms_column = [
         sg.Frame(
             layout=[
                 [
-                    sg.Text("Predicted implicit indexes", size=(30, 1)), 
+                    sg.Text("Estimated implicit indexes", size=(30, 1)), 
                     sg.Text("I* =", size=(17, 1), key="-ESTIMATED IMPLICIT INDEXES-"), 
                 ],
             ],
@@ -280,7 +282,7 @@ algorithms_column = [
 
 layout = [
     [
-        sg.Column(initializing_column),
+        sg.Column(initialization_column),
         sg.VSeperator(),
         sg.Column(algorithms_column, vertical_alignment="top"),
     ]
@@ -296,35 +298,35 @@ while True:
     if event == "Exit" or event == sg.WIN_CLOSED:
         break
 
-    elif event == "-VIEW STATE GRAPH-":
+    elif event == "-VIEW STATE SHAPE-":
         try:
             if values["-N-"] != "":
                 HMM.display_state(int(values["-N-"]))
-                window["-GRAPH-"].update(filename="../Python/images/just_states.png")
+                window["-GRAPH-"].update(filename="Images/just_states.png")
             else:
-                sg.Popup("\nInput value(s)!\n", title="Error window", custom_text="Close", image="../Python/images/oops.png", button_color="red", font=font)
+                sg.Popup("\nInput value(s)!\n", title="Error window", custom_text="Close", image="Images/oops.png", button_color="red", font=font)
         except Exception as error:
             sg.Popup(
                 f"\n{error}\n",
                 title="Error window", 
-                image="../Python/images/error.png",
+                image="Images/error.png",
                 custom_text="Close",
                 button_color="red", 
                 font=("Arial", 16)
             )
         
-    elif event == "-VIEW OBSERVATIONS GRAPH-":
+    elif event == "-VIEW OBSERVED STATE SHAPE-":
         try:
             if (values["-N-"] and values["-OBSERVED INDEXES-"]) not in [""]:
                 HMM.display_graph(eval(values["-OBSERVED INDEXES-"]), values["-IMPLICIT INDEXES-"], int(values["-N-"]))
-                window["-GRAPH-"].update(filename="../Python/images/graph.png")
+                window["-GRAPH-"].update(filename="Images/graph.png")
             else:
-                sg.Popup("\nInput value(s)!\n", title="Error window", custom_text="Close", image="../Python/images/oops.png", button_color="red", font=font)
+                sg.Popup("\nInput value(s)!\n", title="Error window", custom_text="Close", image="Images/oops.png", button_color="red", font=font)
         except Exception as error:
             sg.Popup(
                 f"\n{error}\n",
                 title="Error window", 
-                image="../Python/images/error.png",
+                image="Images/error.png",
                 custom_text="Close",
                 button_color="red", 
                 font=("Arial", 16)
@@ -414,7 +416,7 @@ while True:
 
                     MLE.append(copy.deepcopy(joint_probabilities[-1]))
 
-                    p_statistical_estimation_k = HMM.non_baum_welch_learning_algorithm(y,N,T,I,estimator)
+                    p_statistical_estimation_k = HMM.statistical_p_estimation(y,N,T,I,estimator)
                     p_statistical_estimation.append(copy.deepcopy(p_statistical_estimation_k)) 
 
                 end_time = time.time()
@@ -449,13 +451,13 @@ while True:
 
                 learning_algorithm_indicator = True # learning algorithm is done
             else:
-                sg.Popup("\nInput value(s)!\n", title="Error window", custom_text="Close", image="../Python/images/oops.png", button_color="red", font=font)
+                sg.Popup("\nInput value(s)!\n", title="Error window", custom_text="Close", image="Images/oops.png", button_color="red", font=font)
 
         except Exception as error:
             sg.Popup(
                 f"\n{error}\n",
                 title="Error window", 
-                image="../Python/images/error.png",
+                image="Images/error.png",
                 custom_text="Close",
                 button_color="red", 
                 font=("Arial", 16)
@@ -469,18 +471,18 @@ while True:
                 else:                     
                     HMM.display_estimated_parameters(estimated_parameters,MLE,p_statistical_estimation)
             else:
-                sg.Popup("\nRun learning algorithm!\n", title="Error window", custom_text="Close", image="../Python/images/oops.png", button_color="red", font=font)
+                sg.Popup("\nRun learning algorithm!\n", title="Error window", custom_text="Close", image="Images/oops.png", button_color="red", font=font)
         except Exception as error:
             sg.Popup(
                 f"\n{error}\n",
                 title="Error window", 
-                image="../Python/images/error.png",
+                image="Images/error.png",
                 custom_text="Close",
                 button_color="red", 
                 font=("Arial", 16)
             )
 
-    elif event == "-RUN DECODING ALGORITHM & VIEW DECODING RESULTS-":
+    elif event == "-RUN DECODING ALGORITHM & VIEW RESULTS-":
         try:
             if learning_algorithm_indicator == True:
                 window["-ESTIMATED IMPLICIT INDEXES-"].update("I* =")
@@ -551,8 +553,8 @@ while True:
 
                 HMM.display_y_viterbi_results_by_mismatch_indexes(y_hamming_distances,y_mismatch_indexes,I,T,r)
 
-                x_viterbi_results = cv2.imread("images/x_viterbi_results.png")
-                y_viterbi_results = cv2.imread("images/y_viterbi_results.png")
+                x_viterbi_results = cv2.imread("Images/x_viterbi_results.png")
+                y_viterbi_results = cv2.imread("Images/y_viterbi_results.png")
 
                 if x_viterbi_results.shape != y_viterbi_results.shape:
                     scale = (5.7/7)*x_viterbi_results.shape[1]/y_viterbi_results.shape[1]
@@ -579,7 +581,7 @@ while True:
 
                 viterbi_results = np.concatenate((x_viterbi_results, y_viterbi_results), axis=0)
 
-                cv2.imwrite("images/viterbi_results.png", viterbi_results)
+                cv2.imwrite("Images/viterbi_results.png", viterbi_results)
 
                 plt.axis("off")
                 plt.tight_layout()
@@ -591,12 +593,12 @@ while True:
 
                 decoding_algorithm_indicator = True # decoding algorithm is done
             else:
-                sg.Popup("\nRun learning algorithm!\n", title="Error window", custom_text="Close", image="../Python/images/oops.png", button_color="red", font=font)
+                sg.Popup("\nRun learning algorithm!\n", title="Error window", custom_text="Close", image="Images/oops.png", button_color="red", font=font)
         except Exception as error:
             sg.Popup(
                 f"\n{error}\n",
                 title="Error window", 
-                image="../Python/images/error.png",
+                image="Images/error.png",
                 custom_text="Close",
                 button_color="red", 
                 font=("Arial", 16)
@@ -611,6 +613,7 @@ while True:
 
                 implicit_indexes_figure, tabulated_dataframe, estimated_implicit_indexes = HMM.display_predicted_implicit_indexes(list_of_x_real,list_of_x_predicted,estimated_parameters,real_implicit_indexes,0,T,N)  
 
+                # window["-ESTIMATED IMPLICIT INDEXES-"].update(r"I* = (1,2,5)")
                 window["-ESTIMATED IMPLICIT INDEXES-"].update(f"I* = {estimated_implicit_indexes}")
 
                 plt.figure(figsize=(15,5))
@@ -621,12 +624,12 @@ while True:
                 plt.close()              
                 
             else:    
-                sg.Popup("\nInput I* value(s) and run decoding algorithm!\n", title="Error window", custom_text="Close", image="../Python/images/oops.png", button_color="red", font=font)
+                sg.Popup("\nInput I* value(s) and run decoding algorithm!\n", title="Error window", custom_text="Close", image="Images/oops.png", button_color="red", font=font)
         except Exception as error:
             sg.Popup(
                 f"\n{error}\n",
                 title="Error window", 
-                image="../Python/images/error.png",
+                image="Images/error.png",
                 custom_text="Close",
                 button_color="red", 
                 font=("Arial", 16)

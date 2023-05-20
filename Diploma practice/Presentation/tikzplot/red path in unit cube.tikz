@@ -1,0 +1,49 @@
+\begin{tikzpicture}[font=\footnotesize]
+    % mark apexes of a cube
+    \coordinate[label=below left:{$(0,0,0)$}] (A) at (0,0,3);
+    \coordinate[label=below left:{$(1,0,0)$}] (B) at (3,0,3);
+    \coordinate[label=above right:{$(0,1,0)$}] (C) at (0,0,0);
+    \coordinate[label=above right:{$(1,1,0)$}] (D) at (3,0,0);
+
+    \coordinate[label=above left:{$(0,0,1)$}] (E) at (0,3,3);
+    \coordinate[label=above left:{$(1,0,1)$}] (F) at (3,3,3); % [label={[shift={(-0.5,0)}]{$(1,0,1)$}}]
+    \coordinate[label=above right:{$(0,1,1)$}] (G) at (0,3,0);
+    \coordinate[label=above right:{$(1,1,1)$}] (H) at (3,3,0);
+
+    % rename some of them to create a path
+    \coordinate[label={[red,font=\small]above left:{$x^1$}}] (G) at (0,3,0);
+    \coordinate[label={[red,font=\small]above left:{$x^2$}}] (C) at (0,0,0);
+    \coordinate[label={[red,font=\small]below right:{$x^3$}}] (D) at (3,0,0);
+    \coordinate[label={[red,font=\small]below right:{$x^4$}}] (B) at (3,0,3);
+
+    % draw the cube
+    \draw[very thick] (C) -- (A) -- (B);
+    \draw[very thick] (E) -- (G) -- (H) -- (F) -- (E);
+    \draw[very thick] (E) -- (A);
+    \draw[very thick] (D) -- (H);
+    \draw[very thick] (F) -- (B);
+
+    % mark blue points in each apex
+    \foreach \point in {A,B,C,D,E,F,G,H}{
+        \fill[blue] (\point) circle [radius=2.5pt];
+    }
+
+    % mark red points of the path
+    \foreach \pathpoint in {G,C,D,B}{
+        \fill[red] (\pathpoint) circle [radius=2.6pt];
+    }
+
+    % draw arrows in a path
+    \draw[red,-{Stealth[scale=1.2]},shorten >= 3pt,line width=1.25pt] (G) -- (C);
+    \draw[red,-{Stealth[scale=1.2]},shorten >= 3pt,line width=1.25pt] (C) -- (D);
+    \draw[red,-{Stealth[scale=1.2]},shorten >= 3pt,line width=1.25pt] (D) -- (B);
+
+    % some extentions:
+    % 1) draw the text near an arrow
+    % \draw[-{Stealth[scale=1.2]}, line width=1pt] (A) -- node [left] {$\frac{1-p}{3}$} +(0,2,0);
+    % 2) draw circle-arrow near the point
+    % \draw[
+    %     -{Stealth[scale=1.2]},
+    %     line width=1pt,
+    % ] (0,0,3) arc (0:355:0.5) node[below right] {$p$};
+\end{tikzpicture}

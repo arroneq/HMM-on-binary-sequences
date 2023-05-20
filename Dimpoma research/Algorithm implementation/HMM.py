@@ -1,46 +1,68 @@
+from __future__ import annotations    # enable using function specifications
+import numpy.typing as npt            # https://numpy.org/devdocs/reference/typing.html
+import typing                         # https://docs.python.org/3/library/typing.html#typing.Union 
+
 import numpy as np
 from scipy.spatial import distance
 import itertools
-import copy
 import random
-import pandas as pd
 
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import cv2
+import copy
 
 from numba import jit, cuda
 
+# ------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------
+
+# Set of key computing functions
+
+# ------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------
+
 @jit(target_backend='cuda', forceobj=True)
-def decimal(z):
+def decimal(n: str):
     """ 
-    Returns int decimal number of z, e.g. decimal("010") returns 2
+    Return int decimal number of n
 
     Parameters
     ----------
-    z : string
+    n : string
+
+    Examples
+    --------
+    >>> decimal("010")
+    2
     """
 
-    return int(z,2)
+    return int(n,2)
 
 @jit(target_backend='cuda', forceobj=True)
-def binary(z,N):
+def binary(n: int, N: int):
     """ 
-    Returns string N-characters binary number of z, e.g. binary(2,3) returns "010"
+    Return string N-character binary number of n
 
     Parameters
     ----------
-    z : int
+    n : int
     N : int
         Dimention of any state vector  
+
+    Examples
+    --------
+    >>> binary(2,3)
+    "010"
     """
     
-    bit = [(z>>k)&1 for k in range(0,N)]
+    bit = [(n>>k)&1 for k in range(0,N)]
     return ''.join([str(x) for x in bit])
 
-def generate_hidden_chain(x0,p,N,T):
+def generate_hidden_chain(x0: str, p: float, N: int, T:int) -> list[str]:
     """ 
-    Returns chain of hidden states (called "x_real")
+    Return chain of hidden states ("x_real")
     
     Parameters
     ----------
@@ -48,8 +70,6 @@ def generate_hidden_chain(x0,p,N,T):
         First initial state
     p : float
         Transition probability of symbols ("0"->"0", "0"->"1", "1"->"0", "1"->"1")
-        P = [[p, 1-p],
-             [1-p, p]] - transition matrix with parameter p
     N : int
         Dimention of any state vector
     T : int
@@ -83,9 +103,9 @@ def generate_hidden_chain(x0,p,N,T):
 
     return x
 
-def distort_hidden_chain(x,T,q,I):
+def distort_hidden_chain(x: list[str], T: int, q: list[float], I: list[list[int]]):
     """ 
-    Returns distorted hidden state chain
+    Return distorted hidden state chain
     
     Parameters
     ----------
@@ -94,9 +114,9 @@ def distort_hidden_chain(x,T,q,I):
     T : int
         Length of a chain 
     q : float array(len(I),)
-        Distortion coefficients, optional for distortion of observations
+        Distortion coefficients
     I : int array
-        Set of indexes to observe
+        Set of observed indices
 
     Returns
     -------
@@ -117,16 +137,21 @@ def distort_hidden_chain(x,T,q,I):
 
     return x_distorted
 
-def collect_observations(x,I,T,enumerate):
+def collect_observations(
+        x: list[str], 
+        I: list[list[int]], 
+        T: int, enumerate: bool
+    ) -> typing.Union[list[str], npt.NDArray[np.int64]]:
+
     """ 
-    Returns collected observations (called "y")
+    Return collected observations
     
     Parameters
     ----------
     x         : string array(T,)
                 Chain of hidden states
     I         : int array
-                Set of indexes to observe
+                Set of observed indices
     T         : int
                 Length of a chain
     enumerate : bool
@@ -152,9 +177,10 @@ def collect_observations(x,I,T,enumerate):
     if enumerate == True:
         """
         For now observations look like:
-            collect_observations(["011","010","000", "100"], [[0],[1,2]], 4) returns y = [[0,2],[0,1],[0,0],[1,0]]
+        >>> collect_observations(["011","010","000", "100"], [[0],[1,2]], 4)
+        [[0,2],[0,1],[0,0],[1,0]]
 
-        Let's enumerate items like y = [2,1,0,4]
+        Let's enumerate items: y = [2,1,0,4]
         """
 
         args = [range(j+1) for j in [len(I[i]) for i in range(len(I))]] 
@@ -166,10 +192,9 @@ def collect_observations(x,I,T,enumerate):
 
         return np.asarray(y)
 
-def flatten_observations(y):
+def flatten_observations(y: npt.NDArray[np.int64]):
     """ 
-    Returns string chain of observations, e.g. 
-        flatten_observations([0,1],[1,1],[1,1],[1,0]]) returns ["10","11","11","10"] 
+    Return string chain of observations
 
     Parameters
     ----------
@@ -180,6 +205,11 @@ def flatten_observations(y):
     -------
     y : str array(T,)
         String chain of observations
+    
+    Examples
+    --------
+    >>> flatten_observations([0,1],[1,1],[1,1],[1,0]])
+    ["10","11","11","10"]
     """
 
     y_flattened = ["" for i in range(len(y))]
@@ -191,21 +221,26 @@ def flatten_observations(y):
     return y_flattened
 
 @jit(target_backend='cuda', forceobj=True)
-def probability_measures_of_HMM(p,N,I,*args):
+def probability_measures_of_HMM(
+        p: float, 
+        N: int, 
+        I: list[list[int]], 
+        *args: list[float]
+    ) -> tuple[npt.NDArray[np.float64],npt.NDArray[np.float64],npt.NDArray[np.float64]]:
+    
     """ 
-    Returns probability measures (m,A,B) of a Hidden Markov Model
+    Return probability measures (pi,A,B) of a hidden Markov model
 
     Parameters
     ----------
-    p        : float
-               Transition probability of symbols ("0"->"0", "0"->"1", "1"->"0", "1"->"1"). 
-               This parameter is used for creating transition matrix A
-    N        : int
-               Dimention of any state vector
-    I        : int array
-               Set of indexes to observe
-    *args    : float array(len(I),)  
-               Distortion coefficients q, optional for distorted observations
+    p     : float
+            Transition probability of symbols ("0"->"0", "0"->"1", "1"->"0", "1"->"1"). This parameter is used for creating transition matrix A
+    N     : int
+            Dimention of any state vector
+    I     : int array
+            Set of observed indices
+    *args : float array(len(I),)  
+            Distortion coefficients q, mandatory only for distorted observations
 
     Returns
     -------
@@ -219,7 +254,7 @@ def probability_measures_of_HMM(p,N,I,*args):
 
     arguments = [range(j+1) for j in [len(I[i]) for i in range(len(I))]] 
     # e.g. if len(I[0]) == 2, then possible observated values are 0,1,2
-    apo = [list(i) for i in itertools.product(*arguments)] # all_possible_оbservations
+    apo = [list(i) for i in itertools.product(*arguments)] # apo stands for all_possible_оbservations
 
     pi = np.array([1/pow(2,N) for i in range(pow(2,N))])
 
@@ -260,9 +295,17 @@ def probability_measures_of_HMM(p,N,I,*args):
     return pi,A,B
 
 @jit(nopython=True)
-def alpha_calculation(y,m,A,B,T,*args):
+def alpha_calculation(
+        y: npt.NDArray[np.int64],
+        m: npt.NDArray[np.float64],
+        A: npt.NDArray[np.float64],
+        B: npt.NDArray[np.float64],
+        T: int,
+        *args: list[float]
+    ):
+    
     """
-    Returns forward algorithm coefficients
+    Return forward algorithm coefficients
 
     Parameters
     ----------
@@ -288,7 +331,6 @@ def alpha_calculation(y,m,A,B,T,*args):
              Coefficients of scaling (optional, used only for scaled forward algorithm)
     """
 
-    # alpha = np.zeros((T, len(B)), dtype=np.float128)
     alpha = np.zeros((T, len(B)))
 
     if len(args) == 0:
@@ -331,9 +373,16 @@ def alpha_calculation(y,m,A,B,T,*args):
         return alpha, P, args[0]
 
 @jit(nopython=True)
-def beta_calculation(y,A,B,T,*args):
+def beta_calculation(
+        y: npt.NDArray[np.int64],
+        A: npt.NDArray[np.float64],
+        B: npt.NDArray[np.float64],
+        T: int,
+        *args: list[float]
+    ):
+    
     """
-    Returns backward algorithm coefficients
+    Return backward algorithm coefficients
 
     Parameters
     ----------
@@ -353,7 +402,6 @@ def beta_calculation(y,A,B,T,*args):
            Backward algorithm coefficients
     """
 
-    # beta = np.zeros((T, len(B)), dtype=np.float128)
     beta = np.zeros((T, len(B)))
 
     if len(args) == 0:
@@ -384,9 +432,18 @@ def beta_calculation(y,A,B,T,*args):
     return beta
 
 @jit(nopython=True)
-def C1_calculation(y,alpha,beta,A,B,N,T):
+def calculate_p_numerator(
+        y: npt.NDArray[np.int64],
+        alpha: npt.NDArray[np.float64],
+        beta: npt.NDArray[np.int64],
+        A: npt.NDArray[np.int64],
+        B: npt.NDArray[np.int64],
+        N: int,
+        T: int
+    ) -> float:
+    
     """
-    Returns C1 coefficient
+    Return numerator of p estimation
 
     Parameters
     ----------
@@ -407,7 +464,7 @@ def C1_calculation(y,alpha,beta,A,B,N,T):
 
     Returns
     -------
-    C1 : float
+    output : float
     """
 
     exs = 0.0 # external_sum
@@ -418,13 +475,12 @@ def C1_calculation(y,alpha,beta,A,B,N,T):
             ins += alpha[t][j]*beta[t+1][j]*A[j][j]*B[j][y[t+1]]
         exs += ins
 
-    C1 = exs
-    return C1
+    return exs
 
 @jit(nopython=True)
-def C1_plus_C2_calculation(alpha,N,T):
+def calculate_p_denominator(alpha: npt.NDArray[np.float64], N: int, T: int) -> float:
     """
-    Returns (C1 + C2) coefficient
+    Return denominator of p estimation
 
     Parameters
     ----------
@@ -437,7 +493,7 @@ def C1_plus_C2_calculation(alpha,N,T):
 
     Returns
     -------
-    C1 + C2 : float
+    output : float
     """
 
     sum = 0.0
@@ -446,70 +502,21 @@ def C1_plus_C2_calculation(alpha,N,T):
 
     return (T-1)*sum
 
-# @jit(nopython=True)
-def P_сonditional_probability_z_equals_1(apo,xt,yt,i,j,qj,N,I):
-    y = apo[yt]
-    
-    if y[j] + int(list(binary(xt,N))[i]) - 1 < 0 or y[j] + int(list(binary(xt,N))[i]) - 1 > len(I[j]) - 1:
-        return 0.0
-    
-    else:
-        element = 1.0
-        for m in range(len(I)):
-            if m != j:
-                n11 = sum([int(list(binary(xt,N))[u]) for u in I[m]])
-                n01 = len(I[m]) - n11
-
-                item = 0.0
-                for k in [u for u in range(max(0,y[m]-n11), min(y[m],n01)+1)]:
-                    item += np.math.comb(n01,k)*pow(qj,k)*pow(1-qj,n01-k) * np.math.comb(n11,y[m]-k)*pow(1-qj,y[m]-k)*pow(qj,n11-y[m]+k)
-
-            if m == j:
-                n11 = sum([int(list(binary(xt,N))[u]) for u in I[m] if u != i])
-                n01 = len(I[m]) - n11 - 1
-
-                item = 0.0
-                for k in [u for u in range(max(0,y[m]-1+int(list(binary(xt,N))[i])-n11), min(y[m]-1+int(list(binary(xt,N))[i]),n01)+1)]:
-                    item += np.math.comb(n01,k)*pow(qj,k)*pow(1-qj,n01-k) * np.math.comb(n11,y[m]-1+int(list(binary(xt,N))[i])-k)*pow(1-qj,y[m]-1+int(list(binary(xt,N))[i])-k)*pow(qj,n11-y[m]+1-int(list(binary(xt,N))[i])+k)
-
-            element *= item
-        
-        return element
-
-# @jit(nopython=True)
-def P_сonditional_probability_z_equals_0(apo,xt,yt,i,j,qj,N,I):
-    y = apo[yt]
-    
-    if y[j] - int(list(binary(xt,N))[i]) < 0 or y[j] - int(list(binary(xt,N))[i]) > len(I[j]) - 1:
-        return 0.0
-    
-    else:
-        element = 1.0
-        for m in range(len(I)):
-            if m != j:
-                n11 = sum([int(list(binary(xt,N))[u]) for u in I[m]])
-                n01 = len(I[m]) - n11
-
-                item = 0.0
-                for k in [u for u in range(max(0,y[m]-n11), min(y[m],n01)+1)]:
-                    item += np.math.comb(n01,k)*pow(qj,k)*pow(1-qj,n01-k) * np.math.comb(n11,y[m]-k)*pow(1-qj,y[m]-k)*pow(qj,n11-y[m]+k)
-
-            if m == j:
-                n11 = sum([int(list(binary(xt,N))[u]) for u in I[m] if u != i])
-                n01 = len(I[m]) - n11 - 1
-
-                item = 0.0
-                for k in [u for u in range(max(0,y[m]-int(list(binary(xt,N))[i])-n11), min(y[m]-int(list(binary(xt,N))[i]),n01)+1)]:
-                    item += np.math.comb(n01,k)*pow(qj,k)*pow(1-qj,n01-k) * np.math.comb(n11,y[m]-int(list(binary(xt,N))[i])-k)*pow(1-qj,y[m]-int(list(binary(xt,N))[i])-k)*pow(qj,n11-y[m]+int(list(binary(xt,N))[i])+k)
-
-            element *= item
-        
-        return element
-
 @jit(target_backend='cuda', forceobj=True)
-def C3_calculation(y,qj,alpha,beta,A,N,T,I,j):
+def calculate_q_estimation_part_1(
+        y: npt.NDArray[np.int64],
+        qj: float,
+        alpha: npt.NDArray[np.float64],
+        beta: npt.NDArray[np.int64],
+        A: npt.NDArray[np.int64],
+        N: int,
+        T: int,
+        I: list[list[int]],
+        j: int
+    ) -> float:
+    
     """
-    Returns C3 coefficient
+    Return first part of q estimation
 
     Parameters
     ----------
@@ -528,14 +535,43 @@ def C3_calculation(y,qj,alpha,beta,A,N,T,I,j):
     T        : int
                Length of a chain   
     I        : int array
-               Set of observed indexes
+               Set of observed indices
     j        : int
                Index of current q[j] distortion coefficient
 
     Returns
     -------
-    C3 : float
+    output : float
     """
+
+    def P_сonditional_probability_x_i_distorted(apo,xt,yt,i,j,qj,N,I):
+        y = apo[yt]
+        
+        if y[j] + int(list(binary(xt,N))[i]) - 1 < 0 or y[j] + int(list(binary(xt,N))[i]) - 1 > len(I[j]) - 1:
+            return 0.0
+        
+        else:
+            element = 1.0
+            for m in range(len(I)):
+                if m != j:
+                    n11 = sum([int(list(binary(xt,N))[u]) for u in I[m]])
+                    n01 = len(I[m]) - n11
+
+                    item = 0.0
+                    for k in [u for u in range(max(0,y[m]-n11), min(y[m],n01)+1)]:
+                        item += np.math.comb(n01,k)*pow(qj,k)*pow(1-qj,n01-k) * np.math.comb(n11,y[m]-k)*pow(1-qj,y[m]-k)*pow(qj,n11-y[m]+k)
+
+                if m == j:
+                    n11 = sum([int(list(binary(xt,N))[u]) for u in I[m] if u != i])
+                    n01 = len(I[m]) - n11 - 1
+
+                    item = 0.0
+                    for k in [u for u in range(max(0,y[m]-1+int(list(binary(xt,N))[i])-n11), min(y[m]-1+int(list(binary(xt,N))[i]),n01)+1)]:
+                        item += np.math.comb(n01,k)*pow(qj,k)*pow(1-qj,n01-k) * np.math.comb(n11,y[m]-1+int(list(binary(xt,N))[i])-k)*pow(1-qj,y[m]-1+int(list(binary(xt,N))[i])-k)*pow(qj,n11-y[m]+1-int(list(binary(xt,N))[i])+k)
+
+                element *= item
+            
+            return element
 
     args = [range(v+1) for v in [len(I[u]) for u in range(len(I))]] 
     # e.g. if len(I[0]) == 2, then possible values of observations are 0,1,2
@@ -551,7 +587,7 @@ def C3_calculation(y,qj,alpha,beta,A,N,T,I,j):
             
             ins_P = 0.0
             for i in I[j]:
-                ins_P += P_сonditional_probability_z_equals_1(apo,xt,y[t],i,j,qj,N,I)
+                ins_P += P_сonditional_probability_x_i_distorted(apo,xt,y[t],i,j,qj,N,I)
 
             if t == 0:
                 ins_xt += (1/pow(2,N))*qj*ins_P*beta[t][xt]
@@ -559,14 +595,25 @@ def C3_calculation(y,qj,alpha,beta,A,N,T,I,j):
                 ins_xt += ins_aA*qj*ins_P*beta[t][xt]
         ins_t += ins_xt
     
-    C3 = copy.deepcopy(ins_t)
+    output = copy.deepcopy(ins_t)
 
-    return C3
+    return output
 
 @jit(target_backend='cuda', forceobj=True)
-def C4_calculation(y,qj,alpha,beta,A,N,T,I,j):
+def calculate_q_estimation_part_2(
+        y: npt.NDArray[np.int64],
+        qj: float,
+        alpha: npt.NDArray[np.float64],
+        beta: npt.NDArray[np.int64],
+        A: npt.NDArray[np.int64],
+        N: int,
+        T: int,        
+        I: list[list[int]],
+        j: int
+    ) -> float:
+    
     """
-    Returns C4 coefficient
+    Return second part of q estimation
 
     Parameters
     ----------
@@ -585,14 +632,43 @@ def C4_calculation(y,qj,alpha,beta,A,N,T,I,j):
     T        : int
                Length of a chain   
     I        : int array
-               Set of observed indexes
+               Set of observed indices
     j        : int
                Index of current q[j] distortion coefficient
 
     Returns
     -------
-    C4 : float
+    output : float
     """
+
+    def P_сonditional_probability_x_i_not_distorted(apo,xt,yt,i,j,qj,N,I):
+        y = apo[yt]
+        
+        if y[j] - int(list(binary(xt,N))[i]) < 0 or y[j] - int(list(binary(xt,N))[i]) > len(I[j]) - 1:
+            return 0.0
+        
+        else:
+            element = 1.0
+            for m in range(len(I)):
+                if m != j:
+                    n11 = sum([int(list(binary(xt,N))[u]) for u in I[m]])
+                    n01 = len(I[m]) - n11
+
+                    item = 0.0
+                    for k in [u for u in range(max(0,y[m]-n11), min(y[m],n01)+1)]:
+                        item += np.math.comb(n01,k)*pow(qj,k)*pow(1-qj,n01-k) * np.math.comb(n11,y[m]-k)*pow(1-qj,y[m]-k)*pow(qj,n11-y[m]+k)
+
+                if m == j:
+                    n11 = sum([int(list(binary(xt,N))[u]) for u in I[m] if u != i])
+                    n01 = len(I[m]) - n11 - 1
+
+                    item = 0.0
+                    for k in [u for u in range(max(0,y[m]-int(list(binary(xt,N))[i])-n11), min(y[m]-int(list(binary(xt,N))[i]),n01)+1)]:
+                        item += np.math.comb(n01,k)*pow(qj,k)*pow(1-qj,n01-k) * np.math.comb(n11,y[m]-int(list(binary(xt,N))[i])-k)*pow(1-qj,y[m]-int(list(binary(xt,N))[i])-k)*pow(qj,n11-y[m]+int(list(binary(xt,N))[i])+k)
+
+                element *= item
+            
+            return element
 
     args = [range(v+1) for v in [len(I[u]) for u in range(len(I))]] 
     # e.g. if len(I[0]) == 2, then possible values of observations are 0,1,2
@@ -608,7 +684,7 @@ def C4_calculation(y,qj,alpha,beta,A,N,T,I,j):
             
             ins_P = 0.0
             for i in I[j]:
-                ins_P += P_сonditional_probability_z_equals_0(apo,xt,y[t],i,j,qj,N,I)
+                ins_P += P_сonditional_probability_x_i_not_distorted(apo,xt,y[t],i,j,qj,N,I)
 
             if t == 0:
                 ins_xt += (1/pow(2,N))*(1-qj)*ins_P*beta[t][xt]
@@ -616,42 +692,29 @@ def C4_calculation(y,qj,alpha,beta,A,N,T,I,j):
                 ins_xt += ins_aA*(1-qj)*ins_P*beta[t][xt]
         ins_t += ins_xt
     
-    C4 = copy.deepcopy(ins_t)
+    output = copy.deepcopy(ins_t)
 
-    return C4
+    return output
 
-@jit(target_backend='cuda', forceobj=True)
-def C3_plus_C4_calculation(alpha,N,T,I,j):
+def learning_algorithm(
+        y: npt.NDArray[np.int64],
+        N: int,
+        T: int,
+        I: list[list[int]],
+        estimator: typing.Literal[
+            "parameter p estimation task (distortion-free model)", 
+            "parameter p estimation task (model with distortion)",
+            "parameter p and coefficients q estimation task"
+        ],
+        p0: float,
+        q0: float,
+        criterion: typing.Literal["N iterations", "increments"],
+        scaling: bool,
+        window: object
+    ):
+    
     """
-    Returns (C3 + C4) coefficient
-
-    Parameters
-    ----------
-    alpha  : float array(pow(2,N),T)
-             Forward algorithm coefficients
-    N      : int
-             Dimention of any state vector 
-    T      : int
-             Length of a chain   
-    I      : int array
-             Set of observed indexes
-    j      : int
-             Index of current q[j] distortion coefficient
-
-    Returns
-    -------
-    C3 + C4 : float
-    """
-
-    sum = 0.0
-    for i in range(pow(2,N)):
-        sum += alpha[T-1][i]
-
-    return T*len(I[j])*sum
-
-def learning_algorithm(y,N,T,I,estimator,p0,q0,criterion,scaling,window):
-    """
-    Returns learning algorithm results (estimated parameters)
+    Return learning algorithm results (estimated parameters)
 
     Parameters
     ----------
@@ -662,7 +725,7 @@ def learning_algorithm(y,N,T,I,estimator,p0,q0,criterion,scaling,window):
     T         : int
                 Length of a chain
     I         : int array
-                Set of observed indexes
+                Set of observed indices
     estimator : string
                 Type of estimation (only p or both p & q estimation)    
     p0        : float
@@ -715,7 +778,6 @@ def learning_algorithm(y,N,T,I,estimator,p0,q0,criterion,scaling,window):
                 alpha,P = alpha_calculation(y,m,A,B,T)
                 beta = beta_calculation(y,A,B,T)
             else:
-                # scaler = np.zeros(T, dtype=np.float128)
                 scaler = np.zeros(T)
                 alpha,P,scaler = alpha_calculation(y,m,A,B,T,scaler)
                 beta = beta_calculation(y,A,B,T,scaler)
@@ -727,8 +789,8 @@ def learning_algorithm(y,N,T,I,estimator,p0,q0,criterion,scaling,window):
             else:
                 joint_probabilities_increments.append(abs(copy.deepcopy(P) - joint_probabilities_increments[-1]))
 
-            p_numerator = C1_calculation(y,alpha,beta,A,B,N,T)
-            p_denominator = C1_plus_C2_calculation(alpha,N,T)
+            p_numerator = calculate_p_numerator(y,alpha,beta,A,B,N,T)
+            p_denominator = calculate_p_denominator(alpha,N,T)
             p = p_numerator/p_denominator
 
             if np.isnan(p):
@@ -742,14 +804,11 @@ def learning_algorithm(y,N,T,I,estimator,p0,q0,criterion,scaling,window):
 
             if estimator == "parameter p and coefficients q estimation task":
                 for j in range(len(I)):
-                    C3 = C3_calculation(y,q[j],alpha,beta,A,N,T,I,j)
-                    C4 = C4_calculation(y,q[j],alpha,beta,A,N,T,I,j)
+                    part_1 = calculate_q_estimation_part_1(y,q[j],alpha,beta,A,N,T,I,j)
+                    part_2 = calculate_q_estimation_part_2(y,q[j],alpha,beta,A,N,T,I,j)
 
-                    qj_numerator = copy.deepcopy(C3)
-                    qj_denominator = copy.deepcopy(C3) + copy.deepcopy(C4)
-
-                    # qj_numerator = C3_calculation(y,q[j],alpha,beta,A,N,T,I,j)
-                    # qj_denominator = C3_plus_C4_calculation(alpha,N,T,I,j)
+                    qj_numerator = copy.deepcopy(part_1)
+                    qj_denominator = copy.deepcopy(part_1) + copy.deepcopy(part_2)
 
                     q[j] = qj_numerator/qj_denominator
 
@@ -797,8 +856,8 @@ def learning_algorithm(y,N,T,I,estimator,p0,q0,criterion,scaling,window):
             else:
                 joint_probabilities_increments.append(abs(copy.deepcopy(P) - joint_probabilities_increments[-1]))
 
-            p_numerator = C1_calculation(y,alpha,beta,A,B,N,T)
-            p_denominator = C1_plus_C2_calculation(alpha,N,T)
+            p_numerator = calculate_p_numerator(y,alpha,beta,A,B,N,T)
+            p_denominator = calculate_p_denominator(alpha,N,T)
             p = p_numerator/p_denominator
 
             if np.isnan(p):
@@ -812,14 +871,11 @@ def learning_algorithm(y,N,T,I,estimator,p0,q0,criterion,scaling,window):
 
             if estimator == "parameter p and coefficients q estimation task":
                 for j in range(len(I)):
-                    C3 = C3_calculation(y,q[j],alpha,beta,A,N,T,I,j)
-                    C4 = C4_calculation(y,q[j],alpha,beta,A,N,T,I,j)
+                    part_1 = calculate_q_estimation_part_1(y,q[j],alpha,beta,A,N,T,I,j)
+                    part_2 = calculate_q_estimation_part_2(y,q[j],alpha,beta,A,N,T,I,j)
 
-                    qj_numerator = copy.deepcopy(C3)
-                    qj_denominator = copy.deepcopy(C3) + copy.deepcopy(C4)
-
-                    # qj_numerator = C3_calculation(y,q[j],alpha,beta,A,N,T,I,j)
-                    # qj_denominator = C3_plus_C4_calculation(alpha,N,T,I,j)
+                    qj_numerator = copy.deepcopy(part_1)
+                    qj_denominator = copy.deepcopy(part_1) + copy.deepcopy(part_2)
 
                     q[j] = qj_numerator/qj_denominator
 
@@ -848,7 +904,6 @@ def learning_algorithm(y,N,T,I,estimator,p0,q0,criterion,scaling,window):
         alpha,P = alpha_calculation(y,m,A,B,T)
         beta = beta_calculation(y,A,B,T)
     else:
-        # scaler = np.zeros(T, dtype=np.float128)
         scaler = np.zeros(T)
         alpha,P,scaler = alpha_calculation(y,m,A,B,T,scaler)
         beta = beta_calculation(y,A,B,T,scaler)
@@ -858,9 +913,20 @@ def learning_algorithm(y,N,T,I,estimator,p0,q0,criterion,scaling,window):
 
     return parameter, joint_probabilities, joint_probabilities_increments
 
-def non_baum_welch_learning_algorithm(y,N,T,I,estimator):
+def statistical_p_estimation(
+        y: npt.NDArray[np.int64],
+        N: int,
+        T: int,
+        I: list[list[int]],
+        estimator: typing.Literal[
+            "parameter p estimation task (distortion-free model)", 
+            "parameter p estimation task (model with distortion)",
+            "parameter p and coefficients q estimation task"
+        ]
+    ) -> float:
+    
     """
-    Returns non baum welch learning algorithm results (estimated p parameter)
+    Return statistical estimation of parameter p
 
     Parameters
     ----------
@@ -871,14 +937,14 @@ def non_baum_welch_learning_algorithm(y,N,T,I,estimator):
     T         : int
                 Length of a chain
     I         : int array
-                Set of observed indexes
+                Set of observed indices
     estimator : string
                 Type of estimation (only p or both p & q estimation) 
 
     Returns
     -------
-    parameter                      : float
-                                     Estimated parameter p
+    parameter : float
+                Estimated parameter p (statistical estimation)
     """
 
     if estimator == "parameter p estimation task (distortion-free model)":
@@ -896,9 +962,16 @@ def non_baum_welch_learning_algorithm(y,N,T,I,estimator):
         return "none"
 
 @jit(target_backend='cuda', forceobj=True)
-def viterbi(y,m,A,B,T):
+def viterbi(
+        y: npt.NDArray[np.int64],
+        m: npt.NDArray[np.float64],
+        A: npt.NDArray[np.float64],
+        B: npt.NDArray[np.float64],
+        T: int
+    ) -> npt.NDArray[np.int64]:
+
     """
-    Returns decoded state chain (called "x_predicted")
+    Return decoded state chain
 
     Parameters
     ----------
@@ -944,9 +1017,23 @@ def viterbi(y,m,A,B,T):
     return x
 
 @jit(target_backend='cuda', forceobj=True)
-def viterbi_algorithm(x_real,y,N,T,I,estimated_parameters,estimator,values):
+def viterbi_algorithm(
+        x_real: list[str],
+        y: npt.NDArray[np.int64],
+        N: int,
+        T: int,
+        I: list[list[int]],
+        estimated_parameters: list[list[float]],
+        estimator: typing.Literal[
+            "parameter p estimation task (distortion-free model)", 
+            "parameter p estimation task (model with distortion)",
+            "parameter p and coefficients q estimation task"
+        ],
+        values: object
+    ):
+    
     """
-    Returns viterbi algorithm results: predicted hidden chain and several measures of accuracy 
+    Return viterbi algorithm results: predicted hidden chain and several measures of accuracy 
 
     Parameters
     ----------
@@ -959,8 +1046,8 @@ def viterbi_algorithm(x_real,y,N,T,I,estimated_parameters,estimator,values):
     T                    : int
                            Length of a chain
     I                    : int array
-                           Set of observed indexes
-    estimated_parameters : float array(n+1,2)
+                           Set of observed indices
+    estimated_parameters : float array
                            Estimated parameters p (and q)
     estimator            : string
                            Type of estimation (only p or both p & q estimation)    
@@ -970,9 +1057,9 @@ def viterbi_algorithm(x_real,y,N,T,I,estimated_parameters,estimator,values):
     -------
     x_predicted                             : int array(T,)
                                               Decoded enumarated state chain
-    x_hamming_distances, x_mismatch_indexes : Arrays that keep information about a match level 
+    x_hamming_distances, x_mismatch_indices : Arrays that keep information about a match level 
                                               between x_real and x_predicted   
-    y_hamming_distances, y_mismatch_indexes : Arrays that keep information about a match level 
+    y_hamming_distances, y_mismatch_indices : Arrays that keep information about a match level 
                                               between y_real and y_predicted (based on x_predicted)   
     """
     
@@ -993,19 +1080,19 @@ def viterbi_algorithm(x_real,y,N,T,I,estimated_parameters,estimator,values):
     # -------------- define errors between real and predicted states --------------
 
     x_hamming_distances = [0 for i in range(N+1)]
-    x_mismatch_indexes = [[] for i in range(N+1)]
+    x_mismatch_indices = [[] for i in range(N+1)]
     for t in range(T):
         for i in range(N+1): 
             if distance.hamming(list(x_real[t]),list(x_predicted[t]))*N == i:
                 x_hamming_distances[i] += 1/T
                 if i != 0:
-                    x_mismatch_indexes[i].append(define_mismatch_indexes(x_real[t],x_predicted[t]))
+                    x_mismatch_indices[i].append(define_mismatch_indices(x_real[t],x_predicted[t]))
     
     # hamming_distances_k[2] = [0.75, 0.25, 0, 0] --> hamming_distances_k[2] = [75,25,0,0]
     x_hamming_distances = [x_hamming_distances[i]*100 for i in range(N+1)]
 
-    # mismatch_indexes_k[2] = [[1,2],[3,4],[1,4]] --> mismatch_indexes_k[2] = [1,2,3,4,1,4]
-    x_mismatch_indexes = [sum(x_mismatch_indexes[i],[]) for i in range(N+1)]
+    # mismatch_indices_k[2] = [[1,2],[3,4],[1,4]] --> mismatch_indices_k[2] = [1,2,3,4,1,4]
+    x_mismatch_indices = [sum(x_mismatch_indices[i],[]) for i in range(N+1)]
 
     # -------------- define errors between real and predicted observations --------------
 
@@ -1016,25 +1103,35 @@ def viterbi_algorithm(x_real,y,N,T,I,estimated_parameters,estimator,values):
     y_predicted = flatten_observations(y_predicted)
 
     y_hamming_distances = [0 for i in range(len(I)+1)]
-    y_mismatch_indexes = [[] for i in range(len(I)+1)]
+    y_mismatch_indices = [[] for i in range(len(I)+1)]
     for t in range(T):
         for i in range(len(I)+1): 
             if distance.hamming(list(y_real[t]),list(y_predicted[t]))*len(I) == i:
                 y_hamming_distances[i] += 1/T
                 if i != 0:
-                    y_mismatch_indexes[i].append(define_mismatch_indexes(y_real[t],y_predicted[t]))
+                    y_mismatch_indices[i].append(define_mismatch_indices(y_real[t],y_predicted[t]))
 
     # hamming_distances_k[2] = [0.75, 0.25, 0, 0] --> hamming_distances_k[2] = [75,25,0,0]
     y_hamming_distances = [y_hamming_distances[i]*100 for i in range(len(I)+1)]
 
-    # mismatch_indexes_k[2] = [[1,2],[3,4],[1,4]] --> mismatch_indexes_k[2] = [1,2,3,4,1,4]
-    y_mismatch_indexes = [sum(y_mismatch_indexes[i],[]) for i in range(len(I)+1)]
+    # mismatch_indices_k[2] = [[1,2],[3,4],[1,4]] --> mismatch_indices_k[2] = [1,2,3,4,1,4]
+    y_mismatch_indices = [sum(y_mismatch_indices[i],[]) for i in range(len(I)+1)]
 
-    return x_predicted, x_hamming_distances, x_mismatch_indexes, y_hamming_distances, y_mismatch_indexes
+    return x_predicted, x_hamming_distances, x_mismatch_indices, y_hamming_distances, y_mismatch_indices
 
-def estimate_implicit_indexes(x_real,x_predicted,real_implicit_indexes,estimate_length,T0,T,N,metrics_type):
+def estimate_implicit_indices(
+        x_real: list[str],
+        x_predicted: list[int],
+        real_implicit_indices: list[int],
+        estimate_length: typing.Literal["maximum", "сonsistent"],
+        T0: int,
+        T: int,
+        N: int,
+        metrics_type: typing.Literal["square", "weighted Jaccard"]
+    ) -> tuple[int]:
+    
     """
-    Returns estimation for implicit indexes in a hidden chain 
+    Return estimation of implicit indices in a hidden chain 
 
     Parameters
     ----------
@@ -1042,10 +1139,10 @@ def estimate_implicit_indexes(x_real,x_predicted,real_implicit_indexes,estimate_
                                  Real chain of the hidden states
     x_predicted                : int array(T,)
                                  Decoded enumarated state chain
-    real_implicit_indexes      : int array
-                                 Real set of implicit indexes
+    real_implicit_indices      : int array
+                                 Real set of implicit indices
     estimate_length            : string array()
-                                 A way to estimate length of set of implicit indexes: eigher by ["maximum"] method or by using ["сonsistent", p*] estimation
+                                 A way to estimate length of set of implicit indices: eigher by ["maximum"] method or by using ["сonsistent", p*] estimation
     T0                         : int
                                  Start estimation algorithm beginning with a T0 state (it means T0 states are considered to be for "overclocking")  
     T                          : int
@@ -1053,17 +1150,17 @@ def estimate_implicit_indexes(x_real,x_predicted,real_implicit_indexes,estimate_
     N                          : int
                                  Dimention of any state vector 
     metrics_type               : string
-                                 Either 'square' or 'weighted Jaccard'
+                                 Either "square" or "weighted Jaccard"
 
     Returns
     -------
-    predicted_implicit_indexes : int array(T,)
-                                 Set of predicted_implicit_indexes (considering an appropriate list of "0", "1", "2" etc. for given combination) 
+    predicted_implicit_indices : int array(T,)
+                                 Set of predicted_implicit_indices (considering an appropriate list of "0", "1", "2" etc. for given combination) 
     """
 
     phi_real = np.zeros(T, dtype=int)
     for t in range(T0,T):
-        phi_real[t] = sum([int(list(x_real[t])[i]) for i in real_implicit_indexes])   
+        phi_real[t] = sum([int(list(x_real[t])[i]) for i in real_implicit_indices])   
 
     if estimate_length[0] == "maximum":
         estimated_length = max(phi_real)
@@ -1071,28 +1168,32 @@ def estimate_implicit_indexes(x_real,x_predicted,real_implicit_indexes,estimate_
         p = estimate_length[1]
         estimated_length = int((N/(1-p))*(1 - sum([1 for t in range(T0,T-1) if phi_real[t] == phi_real[t+1]])/(T-1)))
 
-    offered_implicit_indexes = list(itertools.combinations([i for i in range(N)], estimated_length))
+    offered_implicit_indices = list(itertools.combinations([i for i in range(N)], estimated_length))
 
-    metric = np.zeros(len(offered_implicit_indexes))
-    for k in range(len(offered_implicit_indexes)):
+    metric = np.zeros(len(offered_implicit_indices))
+    for k in range(len(offered_implicit_indices)):
         phi_offered = np.zeros(T, dtype=int)
         for t in range(T0,T):
-            phi_offered[t] = sum([int(list(x_predicted[t])[i]) for i in offered_implicit_indexes[k]])
+            phi_offered[t] = sum([int(list(x_predicted[t])[i]) for i in offered_implicit_indices[k]])
         
         metric[k] = define_distance(phi_real,phi_offered,metrics_type)
 
     min_metric_value = min(metric)
     argmin_metric_value = [index for index in range(len(metric)) if metric[index] == min_metric_value]
 
-    predicted_implicit_indexes = []
+    predicted_implicit_indices = []
     for index in argmin_metric_value:
-        predicted_implicit_indexes.append(offered_implicit_indexes[index])
+        predicted_implicit_indices.append(offered_implicit_indices[index])
 
-    return predicted_implicit_indexes[0] # collisions happen fairly rarely (only if T < 15)
+    return predicted_implicit_indices[0] # collisions happen fairly rarely (only if T < 15)
 
-def define_mismatch_indexes(real,predicted):
+def define_mismatch_indices(
+        real: list[str],
+        predicted: list[str]
+    ) -> list[int]:
+    
     """
-    Returns mismatch indexes between original states/observations chain and the decoded one
+    Return mismatch indices between original states/observations chain and the decoded one
 
     Parameters
     ----------
@@ -1103,33 +1204,33 @@ def define_mismatch_indexes(real,predicted):
 
     Returns
     -------
-    indexes : int array
-              Mismatch indexes between original and predicted chains
+    indices : int array
+              Mismatch indices between original and predicted chains
     """
 
-    indexes = []
+    indices = []
     
     for i in range(len(real)):
         if real[i] != predicted[i]:
-            indexes.append(i)
+            indices.append(i)
 
-    return indexes
+    return indices
 
-def define_groups_of_crossed_states(I,N):
+def define_groups_of_crossed_states(I: list[list[int]], N: int) -> list[int]:
     """ 
-    Returns intersected indexes according to I 
+    Return intersected indices according to I 
 
     Parameters
     ----------
     I : int array
-        Set of observed indexes
+        Set of observed indices
     N : int
         Dimention of any state vector
 
     Returns
     -------
     cs : int array
-         Intersected indexes according to I
+         Intersected indices according to I
     """
 
     cs = [] # crossed_states
@@ -1146,9 +1247,15 @@ def define_groups_of_crossed_states(I,N):
 
     return cs
 
-def define_distance(A,B,type,*args):
+def define_distance(
+        A: npt.NDArray[np.float64], 
+        B: npt.NDArray[np.float64], 
+        type: typing.Literal["square", "weighted Jaccard", "Wasserstein"],
+        *args: float
+    ):
+
     """ 
-    Returns a chosen distance between set A and set B
+    Return a chosen distance between set A and set B
     """
 
     if type == "square":
@@ -1160,9 +1267,17 @@ def define_distance(A,B,type,*args):
         B = np.sort(B)
         return pow(sum([pow(abs(a-b),args[0]) for a,b in zip(A,B)])/len(A),1/args[0])
 
+# ------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------
+
+# Set of visualisation functions (no function specifications)
+
+# ------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------
+
 def display_state(N):
     """ 
-    Saves figure of a state graph
+    Save figure of a state graph
 
     Parameters
     ----------
@@ -1209,19 +1324,19 @@ def display_state(N):
     plt.axis("off")
     plt.axis("equal")
 
-    plt.savefig("images/just_states.png")
+    plt.savefig("Images/just_states.png")
     plt.close()
 
-def display_graph(I,implicit_indexes,N):
+def display_graph(I,implicit_indices,N):
     """ 
-    Saves figure of a state graph according to I
+    Save figure of a state graph according to I
 
     Parameters
     ----------
     I                : int array
-                       Set of observed indexes
-    implicit_indexes : int array
-                       Set of implicit indexes
+                       Set of observed indices
+    implicit_indices : int array
+                       Set of implicit indices
     N                : int
                        Dimention of any state vector
     """
@@ -1270,9 +1385,9 @@ def display_graph(I,implicit_indexes,N):
              marker = 'o', ms = 25, mec = 'black', mew=2, mfc = 'white', 
              linestyle='None', color = 'black')
 
-    # emphasize implicit indexes if there are some
-    if implicit_indexes != "none":
-        for i in eval(implicit_indexes):
+    # emphasize implicit indices if there are some
+    if implicit_indices != "none":
+        for i in eval(implicit_indices):
             if i in cs:
                 plt.plot([u[i]], [v[i]], 
                     marker = 'o', ms = 25, mec = 'black', 
@@ -1302,12 +1417,12 @@ def display_graph(I,implicit_indexes,N):
     plt.axis("off")
     plt.axis("equal")
     
-    plt.savefig("images/graph.png")
+    plt.savefig("Images/graph.png")
     plt.close()
 
 def display_convergence(parameters,joint_probabilities,p_statistical_estimation):
     """ 
-    Shows & saves figure of convergence
+    Show & save figure of convergence
 
     Parameters
     -------
@@ -1343,7 +1458,6 @@ def display_convergence(parameters,joint_probabilities,p_statistical_estimation)
         else:
             plt.plot([i for i in range(len(parameters))], [parameters[i][0] for i in range(len(parameters))])
         plt.title(" ", y=1.05, font=font, loc="left")
-        # plt.legend([r"значення параметра $p$"], prop = font, loc = "upper right")
         if len(parameters) % 10 == 0:
             plt.xticks([i*(len(parameters)//10) for i in range(11)])
         plt.xlabel(
@@ -1441,12 +1555,12 @@ def display_convergence(parameters,joint_probabilities,p_statistical_estimation)
     plt.tight_layout()
     plt.show()
 
-    plt.savefig("images/convergence.png")
+    plt.savefig("Images/convergence.png")
     plt.close()
 
 def display_estimated_parameters(estimated_parameters,MLE,p_statistical_estimation):
     """ 
-    Shows & saves two plots:
+    Show & save two plots:
         1) estimated probabilities p for each restart
         2) histogram of estimated probabilities p
 
@@ -1627,24 +1741,24 @@ def display_estimated_parameters(estimated_parameters,MLE,p_statistical_estimati
         ax2.set_title(r"Гістограма значень $p^*$", y=1.01, font=font)
         ax2.grid(True, axis="y", linestyle='-.')
 
-    plt.savefig("images/estimated_probabilities.png")
+    plt.savefig("Images/estimated_probabilities.png")
     plt.show()
     plt.close()
 
-def display_x_viterbi_results_by_mismatch_indexes(hamming_distances,mismatch_indexes,cs_groups,N,T,r):
+def display_x_viterbi_results_by_mismatch_indices(hamming_distances,mismatch_indices,cs_groups,N,T,r):
     """
-    Saves two plots:
+    Save two plots:
         1) histogram of hamming distances
-        2) histogram of mismatch indexes by indexes like i=0, i=1 etc.
+        2) histogram of mismatch indices by indices like i=0, i=1 etc.
 
     Parameters
     ----------
     hamming_distances : int array(r,)
                         Hamming distances per each restart
-    mismatch_indexes  : int array(r,)
-                        Mismatch indexes per each restart
+    mismatch_indices  : int array(r,)
+                        Mismatch indices per each restart
     cs_groups         : int array
-                        Intersected indexes according to I 
+                        Intersected indices according to I 
     N                 : int
                         Dimention of any state vector
     T                 : int
@@ -1677,7 +1791,7 @@ def display_x_viterbi_results_by_mismatch_indexes(hamming_distances,mismatch_ind
     for j in range(N+1):
         hd_distribution = [hamming_distances[i][j] for i in range(len(hamming_distances))]
 
-        mi_distribution = [mismatch_indexes[i][j] for i in range(len(mismatch_indexes))]
+        mi_distribution = [mismatch_indices[i][j] for i in range(len(mismatch_indices))]
         mi_distribution = sum(mi_distribution,[])
 
         if len(hamming_distances) == 1:
@@ -1704,7 +1818,7 @@ def display_x_viterbi_results_by_mismatch_indexes(hamming_distances,mismatch_ind
 
             ax1.legend()
         
-        height = [mi_distribution.count(i)/(len(mismatch_indexes)*T) for i in range(N)]
+        height = [mi_distribution.count(i)/(len(mismatch_indices)*T) for i in range(N)]
         ax2.bar(
             [f"$i={i}$" for i in range(N)], 
             height, 
@@ -1727,12 +1841,12 @@ def display_x_viterbi_results_by_mismatch_indexes(hamming_distances,mismatch_ind
         }
     )
 
-    plt.savefig("images/x_viterbi_results.png")
+    plt.savefig("Images/x_viterbi_results.png")
     plt.close()
 
 def display_table(dataframe,title,figsize,colWidths,rowLabels,colLabels,colColours,cellColours,savename,bbox):
     """
-    Saves figure of matplotlib.table()
+    Save figure of matplotlib.table()
     """
     
     plt.figure(figsize=figsize)
@@ -1753,24 +1867,24 @@ def display_table(dataframe,title,figsize,colWidths,rowLabels,colLabels,colColou
 
     plt.axis("off")
 
-    plt.savefig("images/" + savename + ".png")
+    plt.savefig("Images/" + savename + ".png")
     plt.close()
 
-def display_x_viterbi_results_by_groups_of_mismatch_indexes(hamming_distances,mismatch_indexes,cs_groups,N,T,r):
+def display_x_viterbi_results_by_groups_of_mismatch_indices(hamming_distances,mismatch_indices,cs_groups,N,T,r):
     """
-    Saves three plots:
+    Save three plots:
         1) histogram of hamming distances
-        2) histogram of mismatch indexes by groups like G0, G1 etc.
+        2) histogram of mismatch indices by groups like G0, G1 etc.
         3) image of groups G0, G1 etc.
 
     Parameters
     ----------
     hamming_distances : int array(r,)
                         Hamming distances per each restart
-    mismatch_indexes  : int array(r,)
-                        Mismatch indexes per each restart
+    mismatch_indices  : int array(r,)
+                        Mismatch indices per each restart
     cs_groups         : int array
-                        Intersected indexes according to I 
+                        Intersected indices according to I 
     N                 : int
                         Dimention of any state vector
     T                 : int
@@ -1804,7 +1918,7 @@ def display_x_viterbi_results_by_groups_of_mismatch_indexes(hamming_distances,mi
     for j in range(N+1):
         hd_distribution = [hamming_distances[i][j] for i in range(len(hamming_distances))]
 
-        mi_distribution = [mismatch_indexes[i][j] for i in range(len(mismatch_indexes))]
+        mi_distribution = [mismatch_indices[i][j] for i in range(len(mismatch_indices))]
         mi_distribution = sum(mi_distribution,[])
 
         if len(hamming_distances) == 1:
@@ -1831,7 +1945,7 @@ def display_x_viterbi_results_by_groups_of_mismatch_indexes(hamming_distances,mi
                 
         height = np.zeros(len(cs_groups))
         for i in range(len(cs_groups)):
-            height[i] = sum([mi_distribution.count(j)/(len(mismatch_indexes)*T) for j in cs_groups[i]])
+            height[i] = sum([mi_distribution.count(j)/(len(mismatch_indices)*T) for j in cs_groups[i]])
 
         ax2.bar(
             [f"$G_{i}$" for i in range(len(cs_groups))], 
@@ -1856,25 +1970,25 @@ def display_x_viterbi_results_by_groups_of_mismatch_indexes(hamming_distances,mi
     )
 
     ax3.axis("off")
-    ax3.imshow(cv2.imread("images/table.png"))
+    ax3.imshow(cv2.imread("Images/table.png"))
 
-    plt.savefig("images/x_viterbi_results.png")
+    plt.savefig("Images/x_viterbi_results.png")
     plt.close()
 
-def display_y_viterbi_results_by_mismatch_indexes(hamming_distances,mismatch_indexes,I,T,r):
+def display_y_viterbi_results_by_mismatch_indices(hamming_distances,mismatch_indices,I,T,r):
     """
-    Saves two plots:
+    Savestwo plots:
         1) histogram of hamming distances
-        2) histogram of mismatch indexes by indexes like I0, I1 etc.
+        2) histogram of mismatch indices by indices like I0, I1 etc.
 
     Parameters
     ----------
     hamming_distances : int array(r,)
                         Hamming distances per each restart
-    mismatch_indexes  : int array(r,)
-                        Mismatch indexes per each restart
+    mismatch_indices  : int array(r,)
+                        Mismatch indices per each restart
     I                 : int array
-                        Set of observed indexes
+                        Set of observed indices
     T                 : int
                         Length of a chain  
     r                 : int
@@ -1905,7 +2019,7 @@ def display_y_viterbi_results_by_mismatch_indexes(hamming_distances,mismatch_ind
     for j in range(len(I)+1):
         hd_distribution = [hamming_distances[i][j] for i in range(len(hamming_distances))]
 
-        mi_distribution = [mismatch_indexes[i][j] for i in range(len(mismatch_indexes))]
+        mi_distribution = [mismatch_indices[i][j] for i in range(len(mismatch_indices))]
         mi_distribution = sum(mi_distribution,[])
 
         if len(hamming_distances) == 1:
@@ -1929,7 +2043,7 @@ def display_y_viterbi_results_by_mismatch_indexes(hamming_distances,mismatch_ind
 
             ax1.legend()
         
-        height = [mi_distribution.count(i)/(len(mismatch_indexes)*T) for i in range(len(I))]
+        height = [mi_distribution.count(i)/(len(mismatch_indices)*T) for i in range(len(I))]
         ax2.bar(
             [f"$I_{i}$" for i in range(len(I))], 
             height, 
@@ -1952,10 +2066,10 @@ def display_y_viterbi_results_by_mismatch_indexes(hamming_distances,mismatch_ind
         }
     )
 
-    plt.savefig("images/y_viterbi_results.png")
+    plt.savefig("Images/y_viterbi_results.png")
     plt.close()
 
-def display_predicted_implicit_indexes(list_of_x_real,list_of_x_predicted,estimated_parameters,real_implicit_indexes,T0,T,N):
+def display_predicted_implicit_indices(list_of_x_real,list_of_x_predicted,estimated_parameters,real_implicit_indices,T0,T,N):
 
     jaccard_dictionary = {} # dictionary to store results, obtained using Jaccard metric
     square_dictionary = {}  # dictionary to store results, obtained using square metric
@@ -1966,32 +2080,32 @@ def display_predicted_implicit_indexes(list_of_x_real,list_of_x_predicted,estima
         estimate_length = ["maximum"] 
         # estimate_length = ["сonsistent", estimated_parameters[i][0]]
 
-        I = estimate_implicit_indexes(
+        I = estimate_implicit_indices(
             list_of_x_real[i],
             list_of_x_predicted[i],
-            real_implicit_indexes,
+            real_implicit_indices,
             estimate_length,
             T0,T,N,
             metrics_type="square"
         )
 
-        d = define_distance(real_implicit_indexes,I,"weighted Jaccard")
+        d = define_distance(real_implicit_indices,I,"weighted Jaccard")
         
         if I in square_dictionary.keys():
             square_dictionary[I][1] += 1
         else:
             square_dictionary[I] = [d, 1]
 
-        I = estimate_implicit_indexes(
+        I = estimate_implicit_indices(
             list_of_x_real[i],
             list_of_x_predicted[i],
-            real_implicit_indexes,
+            real_implicit_indices,
             estimate_length,
             T0,T,N,
             metrics_type="weighted Jaccard"
         )
 
-        d = define_distance(real_implicit_indexes,I,"weighted Jaccard")
+        d = define_distance(real_implicit_indices,I,"weighted Jaccard")
         
         if I in jaccard_dictionary.keys():
             jaccard_dictionary[I][1] += 1
@@ -2002,20 +2116,16 @@ def display_predicted_implicit_indexes(list_of_x_real,list_of_x_predicted,estima
 
     jaccard_distances = [jaccard_dictionary[I][0] for I in jaccard_dictionary.keys() for _ in range(jaccard_dictionary[I][1])]
 
-    plt.figure(figsize=(9,5)) # (9,5), (12,8)
+    plt.figure(figsize=(9,5))
     plt.title(f"Histogram of {r} restarts", y=1.025, fontdict={"family": "Serif", "size": 16, "weight": "bold"})
 
     plt.hist(
         [square_distances, jaccard_distances], 
-        # bins = 20, 
-        # range=(0,0.5),
-        # density = True,
         weights=[
             (1/len(square_distances))*np.ones_like(square_distances), 
             (1/len(jaccard_distances))*np.ones_like(jaccard_distances)
         ], 
         histtype = "bar",
-        # color = ["blue", "green"],
         label = [
             "Square classifier", 
             "Jaccard classifier"
@@ -2023,17 +2133,17 @@ def display_predicted_implicit_indexes(list_of_x_real,list_of_x_predicted,estima
     )
 
     plt.xlim(xmin=-0.04)
-    plt.xlabel("Weighted Jaccard distance " + r"$d_J$" + " to the real implicit indexes", fontdict={"family": "Serif", "size": 14})
+    plt.xlabel("Weighted Jaccard distance " + r"$d_J$" + " to the real implicit indices", fontdict={"family": "Serif", "size": 14})
     plt.ylabel("Distribution among restarts", fontdict={"family": "Serif", "size": 14})
     plt.legend(prop = {"family": "Serif", "size": 14})
 
-    plt.savefig("images/implicit_indexes_histogram.png")
+    plt.savefig("Images/implicit_indices_histogram.png")
     plt.close()
     
     tabulated_data = {}
 
     classes = set(sum([list(square_dictionary.keys()),list(jaccard_dictionary.keys())],[]))
-    classes_quality = [define_distance(real_implicit_indexes,I,"weighted Jaccard") for I in classes]
+    classes_quality = [define_distance(real_implicit_indices,I,"weighted Jaccard") for I in classes]
 
     for d,I in sorted(zip(classes_quality,classes)):
         if (I in square_dictionary.keys()) and (I in jaccard_dictionary.keys()):
@@ -2063,9 +2173,6 @@ def display_predicted_implicit_indexes(list_of_x_real,list_of_x_predicted,estima
 
     tabulated_dataframe = pd.DataFrame(tabulated_data, index=[r"Distance $d_J$", "Square classifier", "Jaccard classifier", "Voting classifier\n    (0.5 / 0.5)", "Voting classifier\n  (0.36 / 0.64)"]).round(2)
 
-    # col_colors = ["white" if j != np.argmax(tabulated_dataframe.loc["Voting classifier"]) else "honeydew" for j in range(len(tabulated_dataframe.columns))]
-    # cell_colors = [["white" if j != np.argmax(tabulated_dataframe.loc["Voting classifier"]) else "honeydew" for j in range(len(tabulated_dataframe.columns))] for i in range(len(tabulated_dataframe.index))]
-
     col_colors = None
     cell_colors = [["white" for j in range(len(tabulated_dataframe.columns))] for i in range(len(tabulated_dataframe.index))]
     cell_colors[tabulated_dataframe.index.get_loc("Voting classifier\n    (0.5 / 0.5)")][np.argmax(tabulated_dataframe.loc["Voting classifier\n    (0.5 / 0.5)"])] = "honeydew"
@@ -2074,21 +2181,21 @@ def display_predicted_implicit_indexes(list_of_x_real,list_of_x_predicted,estima
     display_table(
         tabulated_dataframe,
         title="Tabulated data",
-        figsize=(9,5),  # (16,8)
+        figsize=(9,5),
         colWidths=[(1-0.1)/len(tabulated_dataframe.columns) for _ in range(len(tabulated_dataframe.columns))],
         rowLabels=tabulated_dataframe.index,
         colLabels=tabulated_dataframe.columns,
         colColours=col_colors,
         cellColours=cell_colors,
-        savename="implicit_indexes_table",
+        savename="implicit_indices_table",
         bbox=[0.2, 0, 0.9, 1]
     )
 
-    implicit_indexes_table = cv2.imread("images/implicit_indexes_table.png")
-    implicit_indexes_histogram = cv2.imread("images/implicit_indexes_histogram.png")
+    implicit_indices_table = cv2.imread("Images/implicit_indices_table.png")
+    implicit_indices_histogram = cv2.imread("Images/implicit_indices_histogram.png")
 
-    implicit_indexes_figure = np.concatenate((implicit_indexes_histogram, implicit_indexes_table), axis=1)
+    implicit_indices_figure = np.concatenate((implicit_indices_histogram, implicit_indices_table), axis=1)
 
-    cv2.imwrite("images/implicit_indexes_figure.png", implicit_indexes_figure)
+    cv2.imwrite("Images/implicit_indices_figure.png", implicit_indices_figure)
 
-    return implicit_indexes_figure, tabulated_dataframe, tabulated_dataframe.keys()[np.argmax(tabulated_dataframe.loc["Voting classifier\n    (0.5 / 0.5)"])]
+    return implicit_indices_figure, tabulated_dataframe, tabulated_dataframe.keys()[np.argmax(tabulated_dataframe.loc["Voting classifier\n    (0.5 / 0.5)"])]

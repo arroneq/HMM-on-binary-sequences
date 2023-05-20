@@ -1,0 +1,10 @@
+%%% У даному файлі визначайте всі необхідні вам нові команди TeX
+%%% або робіть перевизначення існуючих, наприклад...
+
+\renewcommand{\theequation}{\thechapter.\arabic{equation}} % Номерація формул всередині секцій
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+
+\newcommand*{\scaleq}[2][4]{\scalebox{#1}{$#2$}}%
+
+\renewcommand{\lstlistingname}{Algorithm} % зміна формату підпису блоків коду

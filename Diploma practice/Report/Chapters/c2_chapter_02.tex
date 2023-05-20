@@ -1,0 +1,186 @@
+%!TEX root = ../thesis.tex
+% створюємо розділ
+\chapter{Результати чисельного експерименту}
+\label{chap: practice}
+
+Для програмної реалізації реалізація алгоритмів розв’язування задачі побудови оцінок невідомих параметрів моделі було використано засоби мови програмування \texttt{Python} версії \texttt{3.8.10} в інтегрованому середовищі розробки \texttt{Visual Studio Code} версії \texttt{1.78.2}.
+
+Вибір мови програмування зумовлювався широким арсеналом вбудованих програмних пакетів мови \texttt{Python} для роботи з масивами даних та математичними обчисленнями (бібліотеки \texttt{NumPy}, \texttt{itertools}, \texttt{SciPy}, \texttt{random}, \texttt{numda}), а також наявними інструментами для візуалізації даних (пакети \texttt{pandas}, \texttt{matplotlib}). Додаток Б містить тексти ключових програмних блоків коду, необхідних для реалізації чисельного експерименту.
+
+Крім того, для ефективного керування великою кількістю взаємопов'язаних програмних блоків (функцій), а також для більш наочної демонстрації отриманих результатів було розроблено графічний інтерфейс користувача засобами пакету \texttt{PySimpleGUI} мови \texttt{Python}. Додаток А містить опис та приклад роботи розробленого програмного модуля.
+
+\section{Оцінка невідомого параметра моделі}
+
+У рамках чисельного експерименту було згенеровано прихований ланцюг Маркова протягом $T=200$ моментів часу для бінарних послідовностей довжини $N=5$ при заданому параметрі моделі $p=0.2$. Множину спостережуваних індексів було задано таким чином:
+\begin{equation}\label{eq: example observed indexes}
+    I=\{I_1,I_2\}=\{(2,3),(1,4)\}
+\end{equation} 
+
+Рис.~\ref{pic: p baum-welch learning algorithm} демонструє збіжність алгоритму Баума-Велша при оцінці параметра $p$. Червоним кольором позначена початкова ітерація $p^{(0)}=0.55$.
+
+\begin{figure}[H]\centering
+    \setfontsize{14pt}
+    \begin{tikzpicture}
+        \begin{axis}[
+            xlabel = Ітерації алгоритму,
+            ylabel = Значення параметра $\widehat{\,p\,}$,
+            scale only axis,
+            ymax = 0.62,
+            grid = both,
+            grid style = {draw=gray!30},
+            minor tick num = 4,
+            minor grid style = {draw=gray!10},
+        ]
+            \addplot[blue!80, mark=*] table {Data/baum-welch learning algorithm.txt};
+            \addplot[red, mark=*] table {
+                n p
+                0 0.55
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Ітерації алгоритму Баума-Велша для оцінки параметра $p$}
+    \label{pic: p baum-welch learning algorithm}
+\end{figure}
+
+За $n=12$ ітерацій алгоритм досягає точності $\varepsilon=0.0001$ переоцінки оцінюваного параметра. При цьому, отримане значення $\widehat{\,p\,}=0.1959$ відрізняється від свого істинного значення $p=0.2$ на величину $\delta=0.0041$.
+
+\section{Алгоритм декодування прихованих станів}
+
+Наступним кроком, отримавши оцінене значення $\widehat{\,p\,}$, декодуємо ланцюг прихованих станів за допомогою алгоритму Вітербі~\cite[розділ 6]{Nilsson2005}. 
+
+Якість отриманих результатів оцінимо через порівняння в кожен момент часу $t$ істинної прихованої бінарної послідовності $X^t$ та декодованої $\widehat{X^t}$ за допомогою відстані Геммінга:
+\begin{equation*}
+    d_H\left( X^t,\widehat{X^t} \right) = \sum_{i=1}^{N} \mathbbm{1}\left( X^t_i \neq \widehat{X^t_i} \right)
+\end{equation*} 
+
+Таким чином, чим більше символів між справжнім та декодованим станами збігаються, тим меншою буде відповідна відстань Геммінга $d_H$. 
+
+\begin{figure}[H]\centering
+    \setfontsize{14pt}
+    \begin{tikzpicture}
+        \begin{axis}[
+            symbolic x coords = {$d_H=0$,$d_H=1$,$d_H=2$,$d_H=3$,$d_H=4$,$d_H=5$},
+            x tick label style = {font=\footnotesize},
+            scale only axis,
+            ymin = 0.0,
+            xlabel = Значення відстані Геммінга,
+            ylabel = Частка серед усіх станів,
+            ymajorgrids = true,
+            yminorgrids = true,
+            grid style = {draw=gray!30},
+            minor tick num = 4,
+            minor grid style = {draw=gray!10},
+            minor x tick style = {draw=none},
+        ]
+            \addplot [
+                ybar,
+                bar width=25pt,
+                fill=blue!80,
+                opacity=0.7,
+            ] coordinates {
+                ($d_H=0$,0.17) ($d_H=1$,0.375) ($d_H=2$,0.135) ($d_H=3$,0.25) ($d_H=4$,0.045) ($d_H=5$,0.025)
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Результати алгоритму декодування Вітербі}
+    \label{pic: viterbi decoding algorithm}
+\end{figure}
+
+З гістограми результатів (Рис.~\ref{pic: viterbi decoding algorithm}) видно, що $17\%$ усього ланцюга декодовано правильно. Наявність близько $40\%$ помилок в одному символі може бути наслідком того, що одного елемента стану немає серед спостережуваних областей ланцюга. Крім того, оцінений параметр $\widehat{\,p\,}$ має похибку $\delta=0.0041$ відносно свого істинного значення, що також впливає на результати задачі декодування.
+
+\section{Оцінка множини неявних індексів}
+
+В ролі множини неявних індексів було обрано набір $I_* = (1,3,5)$. В Табл.~\ref{table: dependence between |I_*| and T} показано збіжність змістовної та незміщеної оцінки~\eqref{eq: ||I*|| estimation} потужності $\widehat{|I_*|}$. Бачимо, що довжини ланцюга $T=200$ недостатньо для отримання точної оцінки. 
+
+\begin{table}[H]\centering
+    \setfontsize{14pt}
+    \caption{Залежність значення оцінки $\widehat{|I_*|}$ від довжини ланцюга}
+    \begin{tblr}{
+            hlines,vlines,
+            colspec={cccccc},
+            % colspec={c|c|c|c|c|c},
+            % rowspec={c|c|c},
+            row{1-3}={mode=math},
+        }
+        T               & 200    & 400    & 600    & 800    & 1000    \\
+        \widehat{\,p\,} & 0.1959 & 0.1823 & 0.1882 & 0.2099 & 0.2092  \\
+        \widehat{|I_*|} & 2      & 2      & 2      & 3      & 3       \\
+    \end{tblr}
+    \label{table: dependence between |I_*| and T}
+\end{table} 
+
+Однак, оскільки обране значення $N$ є невеликим, для оцінки потужності множини неявних індексів в такому випадку можна використати емпіричну оцінку вигляду:
+\begin{equation*}
+    \widehat{|I_*|}=\max\limits_{1\leqslant t \leqslant T} Y^t_{I_*}
+\end{equation*}
+
+Застосуємо отримане значення потужності для виразу~\eqref{eq: I^ estimation}, щоб віднайти елементи, які безпосередньо входять в $I_*:$ квадратична відстань~\eqref{eq: square average distance} вказує на сукупність $\widehat{I\,}_S=(1,2,5)$, а зважена відстань Жаккара~\eqref{eq: weighted Jaccard distance}~--- на сукупність $\widehat{I\,}_J=(1,2,3)$.
+
+Дилему можна вирішити шляхом збільшення $T$ та подальшого використання змістовної оцінки~\eqref{eq: ||I* cup H|| estimation} для визначення взаємного розташування елементів множини неявних індексів відносно спостережуваних індексів~\eqref{eq: example observed indexes}.
+
+\section{Оцінка коефіцієнтів спотворення}
+
+Для кожної із спостережуваних областей~\eqref{eq: example observed indexes} змодельованого ланцюга було обрано такі ймовірності викривлення: $q = (q_1,\,q_2) = (0.05,\,0.1)$. 
+
+Рис.~\ref{pic: p distortion baum-welch learning algorithm} та Рис.~\ref{pic: q distortion baum-welch learning algorithm} демонструють результати переоцінки невідомих параметрів моделі. Червоним кольором позначені значення початкових наближень $p^{(0)}=0.55$ та $q^{(0)}=(0.3,\,0.4)$. 
+
+\begin{figure}[H]\centering
+    \setfontsize{14pt}
+    \begin{tikzpicture}
+        \begin{axis}[
+            xlabel = Ітерації алгоритму,
+            ylabel = Значення параметра $\widehat{\,p\,}$,
+            scale only axis,
+            ymax = 0.62,
+            ymin = 0.18,
+            grid = both,
+            grid style = {draw=gray!30},
+            minor tick num = 4,
+            minor grid style = {draw=gray!10},
+        ]
+            \addplot[blue!80, mark=*] table[x=n, y=p] {Data/baum-welch distortions learning algorithm.txt};
+            \addplot[red, mark=*] table[x=n, y=p] {
+                n p
+                0 0.55
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Ітерації алгоритму Баума-Велша для оцінки параметра $p$, враховуючи спотворення спостережень}
+    \label{pic: p distortion baum-welch learning algorithm}
+\end{figure}
+
+\begin{figure}[H]\centering
+    \setfontsize{14pt}
+    \begin{tikzpicture}
+        \begin{axis}[
+            xlabel = Значення $\widehat{q\,}_1$,
+            ylabel = Значення $\widehat{q\,}_2$,
+            scale only axis,
+            grid = both,
+            grid style = {draw=gray!30},
+            minor tick num = 4,
+            minor grid style = {draw=gray!10},
+            x tick label style={
+                /pgf/number format/.cd,
+                fixed,
+                precision=2
+            }
+            % legend style={at={(0.05,0.95)}, anchor=north west, cells={anchor=west}, draw=none},
+        ]
+            \addplot[blue!80, mark=*] table[x=q1, y=q2] {Data/baum-welch distortions learning algorithm.txt};
+            \addplot[red, mark=*] table[x=q1, y=q2] {
+                n p q1 q2
+                0 0.55 0.3 0.4
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Ітерації алгоритму Баума-Велша для оцінки компонент вектора $q$, враховуючи спотворення спостережень}
+    \label{pic: q distortion baum-welch learning algorithm}
+\end{figure}
+
+\newpage
+Для досягнення точності переоцінки $\varepsilon=0.0001$ оцінюваного параметра $p$ у випадку спотворених даних знадобилося $n=53$ ітерацій. При цьому, помітне збільшення похибки: отримане значення $\widehat{\,p\,}=0.2559$ відрізняється від свого істинного значення $p=0.2$ на суттєво вищий показник $\delta=0.0559$. Водночас, точність оцінки коефіцієнтів спостворення $\widehat{q\,} = \left( \widehat{q\,}_1,\,\widehat{q\,}_2 \right) = (0.0454,\,0.1184)$ є високою: $\delta=(\delta_1,\,\delta_2)=(0.0046,\,0.0184)$.
+
+\chapconclude{\ref{chap: practice}}
+
+Результати чисельного експерименту продемонстрували ефективність використаних методів, зокрема збіжність побудованих оцінок до істинних значень параметрів при збільшенні кількості спостережень.

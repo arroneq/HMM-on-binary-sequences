@@ -1,6 +1,8 @@
 %%%% У даний файл додавайте всі необхідні вам додаткові пакети, наприклад...
 
+\usepackage{mathtools} % for cases environment
 \usepackage[h]{esvect} % fancy vector arrows
+\usepackage{bbm} % for using indicator \mathbbm{1}
 
 \usepackage[bibstyle=gost-numeric,sorting=none]{biblatex}
 \addbibresource{Tsybulnyk diploma thesis.bib}
@@ -10,11 +12,15 @@
 \usepackage{fontspec}
 \setmainfont{CMU serif}
 
+\usepackage{float}
+\usepackage{microtype}
+\usepackage{cmap} % make LaTeX PDF output copy-and-pasteable
+\usepackage{xcolor}
 \usepackage{microtype}
 
-\usepackage{bbm} % for using indicator \mathbbm{1}
-
 \usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{bending} % for flexing and bending arrows
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.3}
 
