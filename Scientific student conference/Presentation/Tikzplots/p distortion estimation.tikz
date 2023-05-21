@@ -8,7 +8,7 @@
         minor tick num = 4,
         minor grid style = {draw=gray!10},
     ]
-        \addplot[blue!80, mark=*] table[x=n, y=p] {data/baum-welch distortions learning algorithm.txt};
+        \addplot[blue!80, mark=*] table[x=n, y=p] {Data/baum-welch distortions learning algorithm.txt};
         \addplot[red, mark=*] table[x=n, y=p] {
             n p
             0 0.55

@@ -2,14 +2,14 @@
     \begin{axis}[
         xlabel = Ітерації алгоритму,
         ylabel = Значення параметра $\widehat{\,p\,}$,
-        ymax = 0.62,
         grid = both,
+        ymax = 0.62,
         grid style = {draw=gray!30},
         minor tick num = 4,
         minor grid style = {draw=gray!10},
     ]
-        \addplot[blue!80, mark=*] table[x=n, y=p] {data/baum-welch distortions learning algorithm.txt};
-        \addplot[red, mark=*] table[x=n, y=p] {
+        \addplot[blue!80, mark=*] table {Data/baum-welch learning algorithm.txt};
+        \addplot[red, mark=*] table {
             n p
             0 0.55
         };

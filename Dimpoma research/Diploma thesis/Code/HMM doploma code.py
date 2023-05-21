@@ -42,7 +42,6 @@ def alpha_calculation(
     """
 
     alpha = np.zeros((T, len(B)))
-
     if len(args) == 0:
         for t in range(T):
             for i in range(len(B)):
@@ -104,7 +103,6 @@ def beta_calculation(
         Length of a chain   
     *args : coefficients of scaling (optional, used only for scaled backward algorithm)
 
-    
     Returns
     -------
     beta : float array(pow(2,N),T)
@@ -161,9 +159,9 @@ def learning_algorithm(
     ----------
     y : int array(T,)
         Chain of observations
+    
     N : int
         Dimention of any state vector 
-    
     T : int
         Length of a chain
     I : int array
@@ -286,6 +284,7 @@ def viterbi(
 
     delta = [[0.0 for i in range(len(B))] for t in range(T)]
     psi = [[0 for i in range(len(B))] for t in range(T)]
+
     for t in range(T):
         for i in range(len(B)):
             if t == 0: 
@@ -309,15 +308,15 @@ def viterbi(
 def define_distance(
         A: npt.NDArray[np.float64], 
         B: npt.NDArray[np.float64], 
-        type: typing.Literal["square", "weighted Jaccard"]
+        label: typing.Literal["square", "weighted Jaccard"]
     ):
     """ 
     Return a distance between set A and set B
     """
 
-    if type == "square":
+    if label == "square":
         return sum([pow(a-b,2) for a,b in zip(A,B)])
-    if type == "weighted Jaccard":
+    if label == "weighted Jaccard":
         return 1 - sum([min(a,b) for a,b in zip(A,B)])/sum([max(a,b) for a,b in zip(A,B)])
 
 def estimate_implicit_indices(
@@ -342,7 +341,7 @@ def estimate_implicit_indices(
         Real set of implicit indices
     estimate_length : string array()
         A way to estimate length of set of implicit indices: 
-        eigher by ["maximum"] method or by using ["сonsistent", p*] estimation
+        eigher by "maximum" method or by using "consistent" estimation
     T : int
         Length of a chain
     N : int

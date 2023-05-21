@@ -1,3 +1,5 @@
+/.vscode
+
 /Dimpoma research/Algorithm implementation/*
 !/Dimpoma research/Algorithm implementation/Images
 !/Dimpoma research/Algorithm implementation/GUI main.py
@@ -5,26 +7,24 @@
 
 /Dimpoma research/Diploma thesis/*
 !/Dimpoma research/Diploma thesis/Chapters
+!/Dimpoma research/Diploma thesis/Code
 !/Dimpoma research/Diploma thesis/Images
 !/Dimpoma research/Diploma thesis/Tikzplots
 
 /Diploma practice/Presentation/*
-!/Diploma practice/Presentation/tikzplot
-!/Diploma practice/Presentation/data
 
 /Diploma practice/Report/*
 !/Diploma practice/Report/Chapters
 !/Diploma practice/Report/Code
 !/Diploma practice/Report/Data
 !/Diploma practice/Report/Images
-!/Diploma practice/Report/Tikzplots
 
 /Scientific student conference/Theses/*
-!/Scientific student conference/Theses/data
+!/Scientific student conference/Theses/Data
 
 /Scientific student conference/Presentation/*
-!/Scientific student conference/Presentation/tikzplot
-!/Scientific student conference/Presentation/data
+!/Scientific student conference/Presentation/Tikzplots
+!/Scientific student conference/Presentation/Data
 
 !*.tex
 !*.cls

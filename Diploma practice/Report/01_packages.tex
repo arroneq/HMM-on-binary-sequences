@@ -20,11 +20,6 @@
 \usepackage[table,xcdraw,dvipsnames]{xcolor}
 \usepackage{color}
 
-% \usepackage{hyperref}
-% \definecolor{linkcolor}{HTML}{0000FF}
-% \definecolor{urlcolor}{HTML}{0000FF} 
-% \hypersetup{pdfstartview=FitH, unicode=true, linkcolor=linkcolor, urlcolor=urlcolor, colorlinks=true}
-
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta}
 \usetikzlibrary{bending} % for flexing and bending arrows
@@ -33,31 +28,30 @@
 
 \usepackage{tabularray} % пакет для просунутих таблиць
 
-\usepackage{listings} % origin: \usepackage{listings}
+\usepackage{listings}
 \DeclareCaptionLabelFormat{listingcap}{\vspace*{1mm}Програма #2}
 \captionsetup[lstlisting]{margin=0pt, singlelinecheck=false, labelfont=bf, textfont=normalfont, justification=justified, labelsep=endash, labelformat=listingcap, font = {Large, stretch = 1.5}}
 
 \lstset{
     frame=single,
     language=Python,
-    aboveskip=0mm,
+    aboveskip=3mm,
     belowskip=3mm,
-    columns=fullflexible,
+    columns=flexible,
     basicstyle=\linespread{1}\small\ttfamily,
     numbers=left,
     numberstyle=\tiny\color{gray},
     commentstyle=\color{OliveGreen},
-    stringstyle=\color{Mahogany},
+    % stringstyle=\color{Mahogany},
     morestring=[b]''',
     showstringspaces=false,
-    keywordstyle=\bfseries\color{blue!90!black},
-    emph={[1]import, as, for, while, in, return}, emphstyle={[1]\bfseries\color{Mulberry}},
-    emph={[2]range}, emphstyle={[2]\bfseries\color{brown}},
+    morekeywords={import, as, for, while, in, return, range},
+    keywordstyle=\bfseries\color{blue!50!black},
+    emph={[1]import, as, for, while, in, return}, emphstyle={[1]\bfseries\color{magenta!60!black}},
     breaklines=true,
     breakatwhitespace=true,
     tabsize=4,
-    keepspaces=false
 }
 
-\pagecolor[rgb]{0.118,0.118,0.118}
-\color[rgb]{0.8,0.8,0.8}
+% \pagecolor[rgb]{0.118,0.118,0.118}
+% \color[rgb]{0.8,0.8,0.8}
