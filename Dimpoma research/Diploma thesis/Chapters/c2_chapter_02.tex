@@ -1,5 +1,5 @@
 %!TEX root = ../thesis.tex
-% створюємо розділ
+
 \chapter{Оцінка параметрів моделі}
 \label{chap: theory}
 
@@ -17,78 +17,547 @@
 
 \section{Моделювання об'єкта дослідження}
 
-% Розглянемо ланцюг Маркова $\left\{ X^t \right\}_{t=\overline{1,T}}$, який приймає значення зі скінченної множини $E=\{0,1\}^N$~--- множини всеможливих бінарних послідовностей довжини $N$.
+Розглянемо ланцюг Маркова $\left\{ X^t \right\}_{t=\overline{1,T}}$, який приймає значення зі скінченної множини $E=\{0,1\}^N$~--- множини всеможливих бінарних послідовностей довжини $N$.
 
-% Динаміка ланцюга відбувається згідно узагальненої моделі Еренфестів: в кожен момент часу $t$ навмання обирається число $j$ з множини індексів $\left\{ 1,2,\ldots,N \right\}$ бінарної послідовності $X^t$ та відповідний елемент стану $X^t_j$ залишається незмінним з імовірністю $p$ або змінюється на протилежний бінарний символ з імовірністю $1-p$.
+Динаміка ланцюга відбувається згідно з узагальненою моделлю Еренфестів: в кожен момент часу $t$ навмання обирається число $j$ з множини індексів $\left\{ 1,\,2,\ldots,\,N \right\}$ бінарної послідовності $X^t$ та відповідний елемент стану $X^t_j$ залишається незмінним з імовірністю $p$ або змінюється на протилежний бінарний символ з імовірністю $1-p$.
 
-% Такого роду еволюцію бінарної послідовності довжини $N$ можна уявити як випадкове блукання вершинами $N$-\,вимірного куба. Наприклад, при довжині послідовностей $N=3$ випадкове блукання відбуватиметься вершинами такого куба: 
+Такого роду еволюцію бінарної послідовності довжини $N$ можна уявити як так зване ліниве випадкове блукання вершинами $N$-\,вимірного куба. Наприклад, зобразимо на Рис.~\ref{pic: Markov chain random walk} реалізацію динаміки бінарних послідовностей довжини $N=3$ протягом $T=4$ моментів часу:
 
-% \begin{figure}[H]\centering
-%     \begin{minipage}[H]{0.6\linewidth}
-%         \begin{figure}[H]\centering
-%             \setfontsize{10pt}
-%             \input{Tikzplots/red path in unit cube.tikz}
-%         \end{figure}
-%     \end{minipage}
-%     \hfill
-%     \begin{minipage}{0.35\linewidth}
-%         \begin{table}[H]
-%             \setfontsize{14pt}
-%             \begin{tblr}{
-%                     colspec={cc},
-%                     column{1,2}={mode=math},
-%                 }
-%                     & x^t     \\
-%                 t=1 & (0,1,1) \\
-%                 t=2 & (0,1,0) \\
-%                 t=3 & (1,1,0) \\
-%                 t=4 & (1,0,0) \\
-%             \end{tblr}
-%         \end{table}
-%     \end{minipage}
-% \end{figure}
+\begin{figure}[H]\centering
+    \begin{minipage}[H]{0.6\linewidth}
+        \begin{figure}[H]\centering
+            \setfontsize{10pt}
+            \input{Tikzplots/red path in unit cube.tikz}
+        \end{figure}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.35\linewidth}
+        \begin{table}[H]
+            \setfontsize{14pt}
+            \begin{tblr}{
+                    colspec={cc},
+                    column{1,2}={mode=math},
+                }
+                    & x^t     \\
+                t=1 & (0,1,1) \\
+                t=2 & (0,1,0) \\
+                t=3 & (1,1,0) \\
+                t=4 & (1,0,0) \\
+            \end{tblr}
+        \end{table}
+    \end{minipage}
+    \caption{Реалізація динаміки ланцюга Маркова}
+    \label{pic: Markov chain random walk}
+\end{figure}
 
-% Як наслідок окресленої динаміки, матриця перехідних імовірностей ланцюга матиме вигляд:
-% \begin{equation*}\label{eq: A transition probabilities}
-%     A_{xx'}=P\left( X^{t+1}=x'\,|\,X^{t}=x \right) = 
-%     \scaleq[0.8]{
-%     \begin{cases*}
-%         p, & $x'=x$ \\
-%         \dfrac{1-p}{N}, & 
-%             $\begin{aligned} 
-%                 & x^{'}_j = 1 - x_j \\ 
-%                 & \forall i \neq j : x^{'}_i=x_i \\ 
-%             \end{aligned}$ \\ 
-%         0, & інакше
-%     \end{cases*}}
-% \end{equation*}
+Бачимо, що рух відбувається по ребрах від вершини до вершини. Для позначення сусідства між станом $X^t$ та $X^{t+1}$ введемо відстань Геммінга:
+\begin{equation}\label{eq: Hamming distance}
+    d_H\left( X^t,\,X^{t+1} \right) = \sum\limits_{i=1}^N \mathbbm{1}\Bigl( X^t_i \neq X^{t+1}_i \Bigr)
+\end{equation}
 
-% Крім того, інваріантний розподіл $\pi=\left( \pi_x \right)_{x \in E}$ заданого ланцюга є рівномірним, тобто $\pi_x = \frac{1}{2^N}$. Вважатимемо, що початковий розподіл збігається з $\pi$.
+В термінах цієї відстані перехід в одну з $N$ сусідніх вершин відповідатиме значенню одиниці, а незмінність стану у послідовні моменти часу~--- значенню нуля. 
 
-% Наступним кроком введемо послідовність випадкових величин $\left\{ Y^t \right\}_{t=\overline{1,T}}$, які формуються таким чином: 
-% \begin{equation}\label{eq: observations}
-%     Y^t = \left( Y^t_k \right)_{k=\overline{1,L}} = \Bigl( \phi\left( X^t,I_k \right) \Bigr)_{k=\overline{1,L}},\ t=\overline{1,T},
-% \end{equation}
-% де $I=\left\{ I_1,\ldots,I_L \right\}$~--- задані підмножини множини індексів $\left\{ 1,2,\ldots,N \right\}$, а функціонал $\phi$ визначимо так:
-% \begin{equation}\label{eq: phi function}
-%     \phi\left( X^t,I_k \right) = \sum_{i \in I_k} X^t_i
-% \end{equation}
+Як наслідок окресленої динаміки, елементи матриці перехідних імовірностей $A$ ланцюга матимуть вигляд:
 
-% \begin{claim}
-%     Послідовність $\left\{ \left( X^t,Y^t \right) \right\}_{t=\overline{1,T}}$ утворює приховану марковську модель $\left( \pi,A,B \right)$, де 
-%     \begin{equation*}\label{eq: B emission probabilities}
-%         B_{xy}=P\left( Y^t=y\,|\,X^t=x \right) = \prod\limits_{k=1}^{L} \mathbb{1}\left( y_k=\sum\limits_{i \in I_k} x_i \right)
-%     \end{equation*}
-% \end{claim}
+\begin{equation}\label{eq: A transition matrix}
+    A_{xx'}=P\left( X^{t+1}=x'\,|\,X^{t}=x \right) = 
+    \begin{cases*}
+        p,              & $d_H\left( x,x' \right)=0$ \\
+        \dfrac{1-p}{N}, & $d_H\left( x,x' \right)=1$ \\ 
+        0,              & інакше
+    \end{cases*}
+\end{equation}
+
+Початковий розподіл $\pi$ заданого ланцюга покладемо рівномірним на множині станів $E$, тобто 
+\begin{equation}\label{eq: pi initial distribution}
+    \forall x \in E\ :\ \pi_x = \frac{1}{2^N}
+\end{equation}
+
+\begin{remark}
+    Рівномірний початковий розподіл $\pi$ заданої марковської моделі $\lambda=(\pi,\,A)$ є інваріантним через те, що матриця $A$ є стохастичною та симетричною водночас. Іншими словами, виконується матрична рівність $\pi A=\pi:$
+    \begin{equation*}
+        \forall x' \in E\ :\ \sum\limits_{x \in E} \pi_x A_{xx'} = \frac{1}{2^N} \sum\limits_{x \in E} A_{xx'} = \frac{1}{2^N} \sum\limits_{x' \in E} A_{xx'} = \frac{1}{2^N} = \pi_{x'}
+    \end{equation*}
+\end{remark}
+
+На додачу до ланцюга Маркова $\left\{ X^t \right\}_{t=\overline{1,T}}$ введемо послідовність випадкових величин $\left\{ Y^t \right\}_{t=\overline{1,T}}$, які формуються таким чином: 
+\begin{equation}\label{eq: Y observations}
+    Y^t = \Bigl( Y^t_k \Bigr)_{k=\overline{1,L}} = \Bigl( \phi\left( X^t,\,I_k \right) \Bigr)_{k=\overline{1,L}},\ t=\overline{1,T},
+\end{equation}
+де $I=\left\{ I_1,\ldots,\,I_L \right\}$~--- задані підмножини множини індексів $\left\{ 1,\,2,\ldots,\,N \right\}$, а функціонал $\phi$ визначимо так:
+\begin{equation}\label{eq: phi function}
+    \phi\left( X^t,\,I_k \right) = \sum_{i \in I_k} X^t_i
+\end{equation}
+
+\begin{claim}
+    Послідовність $\left\{ \left( X^t,\,Y^t \right) \right\}_{t=\overline{1,T}}$ утворює приховану марковську модель $\lambda=\left( \pi,\,A,\,B \right)$ з рівномірним початковим розподілом $\pi$~\eqref{eq: pi initial distribution}, матрицею перехідних імовірностей~\eqref{eq: A transition matrix} та матрицею $B$, елементи якої мають вигляд:
+    \begin{equation}\label{eq: B emission matrix}
+        B_{xy}=P\left( Y^t=y\,|\,X^t=x \right) = \prod\limits_{k=1}^{L} \mathbbm{1}\left( y_k=\sum\limits_{i \in I_k} x_i \right)
+    \end{equation}
+\end{claim}
+\begin{proof}
+    За побудовою послідовності $\left\{ \left( X^t,\,Y^t \right) \right\}_{t=\overline{1,T}}$ означення прихованої марковської моделі (Озн. \ref{def: HMM}) виконується. 
+\end{proof}
+
+Наприклад, наведемо на рисунку нижче реалізацію ланцюга Маркова (Рис.~\ref{pic: Markov chain random walk}) для множини спостережуваних індексів вигляду $I=\{I_1,\,I_2\}=\{ (1,2),\,(3) \}:$
+
+\begin{figure}[H]\centering
+    \begin{minipage}[H]{0.6\linewidth}
+        \begin{figure}[H]\centering
+            \setfontsize{10pt}
+            \input{Tikzplots/red path in unit cube.tikz}
+        \end{figure}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.35\linewidth}
+        \begin{table}[H]
+            \setfontsize{14pt}
+            \begin{tblr}{
+                    colspec={ccc},
+                    column{1-3}={mode=math},
+                }
+                    & x^t     & y^t   \\
+                t=1 & (0,1,1) & (1,1) \\
+                t=2 & (0,1,0) & (1,0) \\
+                t=3 & (1,1,0) & (2,0) \\
+                t=4 & (1,0,0) & (1,0) \\
+            \end{tblr}
+        \end{table}
+    \end{minipage}
+    \caption{Реалізація динаміки прихованої марковської моделі}
+    \label{pic: hidden Markov chain random walk}
+\end{figure}
+
+Бачимо, що умовні ймовірності спостережень при заданих прихованих станах визначаються як добуток індикаторів відповідності по кожній зі спостережуваних областей. До слова, підкреслимо, що множини $I_1,\ldots,\,I_L$ не обов'язково є покриттям чи розбиттям $\left\{ 1,\,2,\ldots,\,N \right\}$.
+
+Таким чином, в результаті маємо сформовану приховану марковську модель $\lambda=\left( \pi,\,A,\,B \right)$ з імовірністю $p$ матриці $A$ в ролі керуючого параметра системи. 
 
 \section{Задача навчання}
 
+За наявними спостереженнями про динаміку набору функціоналів від станів прихованого ланцюга бінарних послідовностей оцінимо керуючий параметр $p$ системи, використовуючи математичний апарат прихованих марковських моделей та методи побудови статистичних оцінок.
+
+\subsection{Ітераційний алгоритм Баума-Велша}
+
+В рамках ітераційного алгоритму Баума-Велша, максимізуємо функцію квазі-log правдоподібності~\eqref{eq: Q quasi-log likelihood function}. Враховуючи вигляд вектора початкового розподілу $\pi$~\eqref{eq: pi initial distribution}, матриці перехідних ймовірностей $A$~\eqref{eq: A transition matrix} та матриці $B$~\eqref{eq: B emission matrix}, функція правдоподібності~\eqref{eq: likelihood function} набуває вигляду:
+\begin{gather*}
+    P\left( Y=y \,|\, \lambda \right) = \sum\limits_{x \in E^T} L_{\lambda} = \sum\limits_{x \in E^T} P\left( X=x,\, Y=y \,|\, \lambda \right) = \\
+    = \sum\limits_{x \in E^T} \pi_{x^1} \cdot \prod\limits_{t=1}^{T-1} A_{x^t x^{t+1}} \cdot \prod\limits_{t=1}^{T} B_{x^ty^t} = \\
+    = \sum\limits_{x \in E^T} \frac{1}{2^N}\, \cdot\, p^{\sum\limits_{t=1}^{T-1} \mathbbm{1} \bigl( d_H\left( x^t,\,x^{t+1} \right) = 0 \bigr)} \cdot \left(\frac{1-p}{N}\right)^{\sum\limits_{t=1}^{T-1} \mathbbm{1} \bigl( d_H\left( x^t,\,x^{t+1} \right) = 1 \bigr)} \cdot \mathbbm{1} \Bigl( x \in G \Bigr),
+\end{gather*}
+де добутки елементів матриці $B$ позначені через множину $G$ таким чином: 
+\begin{equation*}
+    \mathbbm{1} \Bigl( x \in G \Bigr) = \prod\limits_{t=1}^{T} \prod\limits_{k=1}^{L} \mathbbm{1}\left( y_k=\sum\limits_{i \in I_k} x_i \right)
+\end{equation*}
+
+Фактично, величина $\mathbbm{1} \Bigl( x \in G \Bigr)$ вказуватиме, чи є набір станів $x \in E^T$ допустимим при заданій послідовності спостережень $y$. Подальші викладки будуть виконані у припущенні події $\left\{ \mathbbm{1} \Bigl( x \in G \Bigr) = 1 \right\}$.
+
+Відтак, функція квазі-log правдоподібності матиме такий вигляд:
+\begin{multline*}
+    Q\left( \lambda^{(n)},\,\lambda \right) = \sum\limits_{x \in E^T}L_{\lambda^{(n)}} \ln L_{\lambda} = \\
+    \hspace{5.5mm} = \sum\limits_{x \in E^T}L_{\lambda^{(n)}} \left[ \ln\frac{1}{2^N} + \ln p \cdot \sum\limits_{t=1}^{T-1} \mathbbm{1} \Bigl( d_H\left( x^t,\,x^{t+1} \right) = 0 \Bigr) + \right. \\ 
+    \left. + \ln\frac{1-p}{N} \cdot \sum\limits_{t=1}^{T-1} \mathbbm{1} \Bigl( d_H\left( x^t,\,x^{t+1} \right) = 1 \Bigr) \right]
+\end{multline*}
+
+Продовжуючи, домножимо на $L_{\lambda^{(n)}}=P\left( X=x,\, Y=y \,|\, \lambda^{(n)} \right)$ кожен доданок:
+\begin{multline*}
+    Q\left( \lambda^{(n)},\,\lambda \right) = \ln\frac{1}{2^N} \cdot \sum\limits_{x \in E^T} P\left( Y=y,\, X=x \,|\, \lambda^{(n)} \right) + \\
+    + \ln p \cdot \sum\limits_{t=1}^{T-1} \sum\limits_{\scaleq[0.8]{\substack{x,\,x' \in E \\ d_H\left( x,\,x' \right) = 0}}} P\left( Y=y,\, X^t=x,\, X^{t+1}=x' \,|\, \lambda^{(n)} \right) + \\
+    + \ln\frac{1-p}{N} \cdot \sum\limits_{t=1}^{T-1} \sum\limits_{\scaleq[0.8]{\substack{x,\,x' \in E \\ d_H\left( x,\,x' \right) = 1}}} P\left( Y=y,\, X^t=x,\, X^{t+1}=x' \,|\, \lambda^{(n)} \right)
+\end{multline*}
+
+Зазначимо формулу переоцінки сумісної ймовірності подій $U_1$ та $U_2:$
+\begin{equation}\label{eq: conditional probability}
+    P\left( U_1 \,|\, U_2 \right) \overset{\mathrm{def}}{=} \frac{P\left( U_1,\,U_2 \right)}{P(U_2)}\ \Longrightarrow\ P\left( U_1,\,U_2 \right) = P\left( U_1 \,|\, U_2 \right) P(U_2)
+\end{equation}
+
+Скористаємося формулою~\eqref{eq: conditional probability} для такого перетворення:
+\begin{multline*}
+    P_{\lambda^{(n)}} \left( Y=y,\, X^t=x,\, X^{t+1}=x' \right) = \\
+    = P_{\lambda^{(n)}} \left( \underbracket{Y^1=y^1,\ldots,\,Y^t=y^t,\,X^t=x,}_{U_1}\, \underbracket{X^{t+1}=x',}_{U_2}\, \right. \\
+    \left. \underbracket{Y^{t+1}=y^{t+1},}_{U_3}\, \underbracket{Y^{t+2}=y^{t+2},\ldots,\,Y^{T}=y^{T}}_{U_4} \right)
+\end{multline*}
+
+Враховуючи введені позначення $U_1,\,U_2,\,U_3,\,U_4$, отримуємо:
+\begin{multline*}
+    P_{\lambda^{(n)}} \left( Y=y,\, X^t=x,\, X^{t+1}=x' \right) = P_{\lambda^{(n)}} \left( U_1,\,U_2,\,U_3,\,U_4 \right) = \\ 
+    = P_{\lambda^{(n)}} \left( U_1 \right)\, P_{\lambda^{(n)}} \left( U_2 \,|\, U_1 \right)\, P_{\lambda^{(n)}} \left( U_3 \,|\, U_1,\,U_2 \right)\, P_{\lambda^{(n)}} \left( U_4 \,|\, U_1,\,U_2\,U_3 \right)
+\end{multline*}
+
+До отриманих множників послідовно застосуємо марковську властивість (Озн.~\ref{def: markovian property}) та умовну незалежність спостережень при заданих прихованих станах (Озн.~\ref*{def: HMM}), щоб виразити шукану ймовірність через змінні прямого~\eqref{eq: alpha, forward algorithm coefficients} і зворотного~\eqref{eq: beta, backward algorithm coefficients} ходу при поточному наближенні моделі $\lambda^{(n)}=(\pi,\,A^{(n)},\,B):$
+\begin{equation*}
+    P_{\lambda^{(n)}} \left( Y=y,\, X^t=x,\, X^{t+1}=x' \right) = \alpha_t(x)\,A^{(n)}_{xx'}\,B_{x'y^{t+1}}\,\beta_{t+1}(x')
+\end{equation*}
+
+Тоді функція квазі-log правдоподібності набуде такого остаточного вигляду:
+\begin{multline*}
+    Q\left( \lambda^{(n)},\,\lambda \right) = \ln\frac{1}{2^N} \cdot \sum\limits_{x \in E^T} P_{\lambda^{(n)}} \left( Y=y,\, X=x  \right) + \\
+    + \ln p \cdot \sum\limits_{t=1}^{T-1} \sum\limits_{\scaleq[0.8]{\substack{x,\,x' \in E \\ d_H\left( x,\,x' \right) = 0}}} \alpha_t(x)\,A^{(n)}_{xx'}\,B_{x'y^{t+1}}\,\beta_{t+1}(x') + \\
+    + \ln\frac{1-p}{N} \cdot \sum\limits_{t=1}^{T-1} \sum\limits_{\scaleq[0.8]{\substack{x,\,x' \in E \\ d_H\left( x,\,x' \right) = 1}}} \alpha_t(x)\,A^{(n)}_{xx'}\,B_{x'y^{t+1}}\,\beta_{t+1}(x')
+\end{multline*}
+
+Задача пошуку оптимального значення параметра $p$ на кроці $n+1$ при поточному наближенні $p^{(n)}$ зводитиметься до наступного:
+\begin{equation*}
+    p^{(n+1)} = \argmax\limits_{p} Q\left( p^{(n)},\,p \right)\ \Longleftrightarrow\ \frac{d}{dp} Q\left( p^{(n)},\,p \right) = 0
+\end{equation*}
+
+Перш ніж переходити до пошуку екстремуму, вкажемо, що сума
+\begin{multline*}
+    \sum\limits_{\scaleq[0.8]{\substack{x,\,x' \in E \\ d_H\left( x,\,x' \right) = 0}}} P_{\lambda^{(n)}} \left( Y=y,\, X^t=x,\, X^{t+1}=x' \right) + \\ + \sum\limits_{\scaleq[0.8]{\substack{x,\,x' \in E \\ d_H\left( x,\,x' \right) = 1}}} P_{\lambda^{(n)}} \left( Y=y,\, X^t=x,\, X^{t+1}=x' \right)
+\end{multline*}\label{eq: simplified denominator}
+еквівалентна
+\begin{multline*}
+    \sum\limits_{x,\,x' \in E} P_{\lambda^{(n)}} \left( Y=y,\, X^t=x,\, X^{t+1}=x' \right) \mathbbm{1} \Bigl( d_H\left( x,\,x' \right) = 0 \Bigr) + \\ + \sum\limits_{x,\,x' \in E} P_{\lambda^{(n)}} \left( Y=y,\, X^t=x,\, X^{t+1}=x' \right) \mathbbm{1} \Bigl( d_H\left( x,\,x' \right) = 1 \Bigr),
+\end{multline*}
+що, своєю чергою, спрощується як сума ймовірностей повної групи подій до виразу
+\begin{equation*}
+    \sum\limits_{x \in E} P_{\lambda^{(n)}} \left( Y=y,\, X^t=x \right) = \sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)
+\end{equation*}
+
+Отже, як розв'язок диференціального рівняння $\frac{d}{dp} Q\left( p^{(n)},\,p \right) = 0$ отримуємо таку ітераційну формулу переоцінки параметра $p$, починаючи з деякого початкового наближення $p^{(0)}:$
+\begin{equation}\label{eq: p baum-welch estimation}
+    p^{(n+1)} = p^{(n)} \cdot \frac{
+        \sum\limits_{t=1}^{T-1} \sum\limits_{x \in E} \alpha_t(x)\,B_{xy^{t+1}}\,\beta_{t+1}(x)
+    }{
+        \sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)
+    }
+\end{equation}
+
+Принагідно зазначимо, що при великих значеннях довжини ланцюга $(T>300)$ виникає потреба у шкалюванні коефіцієнтів прямого та зворотного ходу згідно з процедурою, описаною на сторінці \pageref{eq: alpha, forward algorithm coefficients}. Процедура нормування не вносить змін у вигляд ітераційної формули переоцінки параметра $p$.
+
+\subsection{Методи математичної статистики}
+
+В межах побудованої прихованої марковської моделі $\lambda=(\pi,\,A,\,B)$ при переоцінці параметра $p$ за формулою~\eqref{eq: p baum-welch estimation} час виконання ітераційного алгоритму Баума-Велша суттєво підвищується при ускладненні моделі шляхом збільшення довжини ланцюга $T$ чи довжини $N$ стану ланцюга (мова йде про значення $T>1000$ та $N>8$). 
+
+Це пов'язано із двократним збільшенням потужності множини станів прихованого ланцюга $E$ при збільшенні $N$, адже $|E|=2^N$. Відтак, багаторазово збільшуються і розміри відповідних матриць $A$, $B$ та вектора $\pi$. 
+
+Як наслідок, збільшується число доданків в операції кратного сумування безпосередньо у формулі переоцінки параметра~\eqref{eq: p baum-welch estimation}.
+
+Проте, враховуючи, що еволюція прихованого ланцюга Маркова відбувається згідно з узагальненою моделлю Еренфестів, матимемо змогу скористатися для розв'язку задачі оцінки невідомого параметра $p$ статистичними методами обробки, за допомогою яких вдасться обійти обмеження на значення $N$ та $T$.
+
+Спершу визначимо, яка ймовірність того, що вектор спостережень $Y^t$ при переході з деякого фіксованого моменту часу $t$ до $t+1$ залишиться незмінним: або обраний елемент у відповідному прихованому стані $X^t_j$ з індексом $j$ з множини усіх спостережень $I_1 \cup I_2 \cup \ldots \cup I_L$ не змінив свого значення (це відбувається з імовірністю $p$), або обраний індекс $j$ взагалі лежить поза спостережуваною областю індексів:
+\begin{equation}\label{eq: equality of successive observations}
+    P\left( Y^t=Y^{t+1} \right) = \frac{\left| \bigcup\limits_{k=1}^{L}I_k \right|}{N}\cdot p + \frac{N-\left| \bigcup\limits_{k=1}^{L}I_k \right|}{N}
+\end{equation}
+
+Крім того, зважаючи на заданий спосіб еволюції моделі події рівності послідовних спостережень є незалежними, адже в послідовні моменти часу вибір елементу прихованого стану, який підлягатиме зміні, відбувається навмання. Відтак $\left\{ \mathbbm{1} \Bigl( Y^t=Y^{t+1} \Bigr),\ t=\overline{1,T-1} \right\}$~--- незалежні та однаково розподілені випадкові величини. А отже, з огляду на закон великих чисел (Теорема~\ref{theorem: law of big numbers}) справджується вираз:
+\begin{equation}\label{eq: LBN parameter p}
+    \frac{1}{T-1}\sum_{t=1}^{T-1}\mathbbm{1} \Bigl( Y^t=Y^{t+1} \Bigr) \xrightarrow[T \longrightarrow \infty]{P} M\mathbbm{1} \Bigl( Y^1=Y^2 \Bigr) = P\left( Y^1=Y^2 \right)
+\end{equation}
+
+З~\eqref{eq: equality of successive observations} та \eqref{eq: LBN parameter p} випливає наступне твердження:
+
+\begin{claim}
+    Змістовною і незміщеною оцінкою невідомого параметра $p$ є статистика
+    \begin{equation}\label{eq: p statistical estimation}
+        \widehat{\,p\,} = 1-\frac{N}{\left| \bigcup\limits_{k=1}^{L}I_k \right|} \left( 1-\frac{1}{T-1}\sum_{t=1}^{T-1}\mathbbm{1} \Bigl( Y^t=Y^{t+1} \Bigr) \right)
+    \end{equation}
+\end{claim}
+
+Зауважимо, що формула~\eqref{eq: p statistical estimation} є значно простішою з обчислювальної точки зору, аніж ітераційний вираз~\eqref{eq: p baum-welch estimation}.
+
 \section{Задача декодування}
+
+Використовуючи оцінене значення параметра $\widehat{\,p\,}$, отримане в результаті застосування алгоритму навчання Баума-Велша або методів статистичної обробки, використаємо алгоритм декодування Вітербі, кроки якого описані у розділі~\ref{section: Viterbi alorithm}, для пошуку послідовності прихованих станів $\widehat{X}^1,\,\widehat{X}^2,\ldots,\,\widehat{X}^T$, яка найкращим чином описує наявні спостереження:
+\begin{equation}\label{eq: decoded stated}
+    \widehat{X} = \argmax\limits_{x \in E^T} P\left( X=x\,|\,Y=y,\,\widehat{\,p\,} \right)
+\end{equation}
 
 \section{Задача локалізації}
 
+Нехай окрім набору спостережень~\eqref{eq: Y observations} протягом еволюції прихованої марковської моделі $\lambda=(\pi,\,A,\,B)$ на кожному кроці $t$ спостерігається деяке додаткове значення $Y^t_{I_*}$ функціонала~\eqref{eq: phi function} від прихованого стану ланцюга по деякій невідомій підмножині індексів $I_* \subseteq \left\{ 1,\,2,\ldots,\,N \right\}:$
+\begin{equation*}
+    Y_{I_*} = \Bigl( Y^t_{I_*} \Bigr)_{t=\overline{1,T}} = \left( \sum_{i \in I_*} X^t_i \right)_{t=\overline{1,T}} 
+\end{equation*}
+
+Використовуючи результати задач навчання та декодування, спробуємо визначити, локалізувати за набором певних <<сигналів>> від прихованого ланцюга джерело їхнього надходження.
+
+\subsection{Оцінка потужності шуканої множини}
+
+Перш за все, оцінимо кількість елементів множини $I_*$. В силу заданого способу еволюції моделі ймовірність незмінності сигналу у послідовні моменти часу можна визначити через керуючий параметр системи $p$ аналогічно до міркувань стосовно ймовірності~\eqref{eq: equality of successive observations}:
+\begin{equation}\label{eq: equality of successive signals}
+    P\left( Y^t_{I_*}=Y^{t+1}_{I_*} \right) = \frac{\left| I_* \right|}{N}\cdot p + \frac{N-\left| I_* \right|}{N}
+\end{equation}
+
+Отримана рівність дозволяє побудувати незміщену та змістовну оцінку для потужності $|I_*|$.
+
+\begin{claim}
+    Змістовною і незміщеною оцінкою потужності множини $I_*$ є статистика
+    \begin{equation}\label{eq: ||I*|| estimation}
+        \widehat{|I_*|} = \frac{N}{1-p} \left( 1-\frac{1}{T-1}\sum_{t=1}^{T-1}\mathbbm{1} \Bigl( Y^t_{I_*}=Y^{t+1}_{I_*} \Bigr) \right) 
+    \end{equation}
+\end{claim}
+\begin{proof}
+    Зважаючи на вигляд ймовірності~\eqref{eq: equality of successive signals}, переконуємося у незміщеності оцінки:
+    \begin{equation*}
+        M\widehat{|I_*|} = M|I_*| 
+    \end{equation*}
+
+    Оскільки динаміка моделі відбувається згідно з узагальненою моделлю Еренфестів, у послідовні моменти часу вибір елементу прихованого стану, який підлягатиме зміні, відбувається навмання. Отже, $\left\{ \mathbbm{1} \Bigl( Y^t_{I_*}=Y^{t+1}_{I_*} \Bigr),\ t=\overline{1,T-1} \right\}$ є незалежними й однаково розподіленими випадковими величинами. А тоді згідно із законом великих чисел (Теорема~\ref{theorem: law of big numbers}) справедливо наступне:
+    \begin{equation*}
+        \frac{1}{T-1}\sum_{t=1}^{T-1}\mathbbm{1} \Bigl( Y^t_{I_*}=Y^{t+1}_{I_*} \Bigr) \xrightarrow[T \longrightarrow \infty]{P} M\mathbbm{1} \Bigl( Y^1_{I_*}=Y^2_{I_*} \Bigr) = P\left( Y^1_{I_*}=Y^2_{I_*} \right)
+    \end{equation*}
+
+    Використовуючи рівність~\eqref{eq: equality of successive signals}, переконуємося у змістовності оцінки:
+    \begin{equation*}
+        \widehat{|I_*|} \xrightarrow[T \longrightarrow \infty]{P} |I_*| 
+    \end{equation*}
+\end{proof}
+
+Аналогічним чином побудуємо оцінку для потужності перетину множини $I_*$ з індексами множин, які задають спостереження моделі. Вказана оцінка дозволить виявити взаємне розташування елементів множини неявних індексів та множини доступних для дослідження елементів прихованого стану ланцюга Маркова.
+
+\begin{claim}
+    Нехай $H \subseteq I_1 \cup I_2 \cup \ldots \cup I_L$~--- довільна підмножина множини спостережуваних індексів $I_1 \cup I_2 \cup \ldots \cup I_L$. Тоді змістовною та незміщеною оцінкою потужності множини $I_* \cap H$ є статистика
+    \begin{equation}\label{eq: ||I* cup H|| estimation}
+        \widehat{\,|I_* \cap H|\,} = \tfrac{N}{(T-1)(1-p)} \cdot \sum_{t=1}^{T-1}\mathbbm{1} \Bigl( Y^t_{I_*} \neq Y^{t+1}_{I_*},\, Y^t_H \neq Y^{t+1}_H \Bigr),
+    \end{equation}
+    де позначено для довільного $t=\overline{1,T-1}:$ 
+    \begin{equation*}
+        Y^t_{H} = \sum_{i \in H} X^t_i
+    \end{equation*}
+\end{claim}
+\begin{proof}
+    Одночасна зміна як сигналу, так і значення функціонала по множині $H$ у послідовні моменти часу відбуватиметься лише тоді, коли обрано та змінено індекс прихованого стану, який належить перетину $I_* \cap H:$
+    \begin{equation*}
+        P\left( Y^t_{I_*} \neq Y^{t+1}_{I_*},\, Y^t_H \neq Y^{t+1}_H \right) = \frac{\left| I_* \cap H \right|}{N}\cdot (1-p)
+    \end{equation*}
+
+    Отже, переконуємося у незміщеності побудованої оцінки:
+    \begin{equation*}
+        M\widehat{\,|I_* \cap H|\,} = M|I_* \cap H| 
+    \end{equation*}
+
+    Крім того, оскільки індекс, який підлягатиме зміні в момент часу $t$, обирається навмання, набір $\left\{ \mathbbm{1} \Bigl( Y^t_{I_*} \neq Y^{t+1}_{I_*},\, Y^t_H \neq Y^{t+1}_H \Bigr),\ t=\overline{1,T-1} \right\}$ утворює послідовність незалежних та однаково розподілених випадкових величин, для яких справедливий закон великих чисел (Теорема~\ref{theorem: law of big numbers}):
+    \begin{equation*}
+        \frac{1}{T-1}\sum_{t=1}^{T-1}\mathbbm{1} \Bigl( Y^t_{I_*} \neq Y^{t+1}_{I_*},\, Y^t_H \neq Y^{t+1}_H \Bigr) \xrightarrow[T \longrightarrow \infty]{P} P\left( Y^1_{I_*} \neq Y^2_{I_*},\, Y^1_H \neq Y^2_H \right)
+    \end{equation*}
+
+    Отримане граничне рівняння дозволяє переконатися у змістовності оцінки:
+    \begin{equation*}
+        \widehat{\,|I_* \cap H|\,} \xrightarrow[T \longrightarrow \infty]{P} |I_* \cap H|
+    \end{equation*}
+\end{proof}
+
+\subsection{Оцінка наповнення шуканої множини}
+
+Стратегія визначення елементів, які безпосередньо входять в множину $I_*$, складатиметься з декількох кроків:
+\begin{enumerate}
+    \item[0)] використовуючи оцінку керуючого параметра $\widehat{\,p\,}$, обчислити потужність множини $I_*$, використовуючи оцінку~\eqref{eq: ||I*|| estimation};
+    \item із загальної множини індексів $\left\{ 1,\,2,\ldots,\,N \right\}$ сформувати всеможливі підмножини довжиною $\widehat{|I_*|}$, тобто вибірку 
+    \begin{equation}\label{eq: candidates for I^}
+        \left\{ \mathtt{I_1},\,\mathtt{I_2},\ldots,\,\mathtt{I}_{C^{\widehat{|I_*|}}_N} \right\}
+    \end{equation}
+    \item для кожного <<кандидата>> $\mathtt{I_k}$ з множини \eqref{eq: candidates for I^} згенерувати послідовність значень функціонала~\eqref{eq: phi function} від декодованих прихованих станів~\eqref{eq: decoded stated} по відповідним індексам:
+    \begin{equation*}
+        \widehat{Y}_{\mathtt{I_k}} = \left( \widehat{Y}^t_{\mathtt{I_k}} \right)_{t=\overline{1,T}} = \left( \sum_{i \in \mathtt{I_k}} \widehat{X}^t_i \right)_{t=\overline{1,T}}
+    \end{equation*}
+    \item за допомогою деякої заданої міри $d$ оцінити для кожного $\mathtt{I_k}$ відстань між множиною $\widehat{Y}_{\mathtt{I_k}}$ та сигналами $Y_{I_*}$;
+    \item оцінкою $\widehat{I\,}$ множини $I_*$ стане той <<кандидат>> $\mathtt{I_k}$ з множини \eqref{eq: candidates for I^}, для якого відстань $d$ буде найменшою:
+    \begin{equation}\label{eq: I^ estimation}
+        \widehat{I\,} = \argmin\limits_{1\leqslant k \leqslant C^{\widehat{|I_*|}}_N}{d\left( \widehat{Y}_{\mathtt{I_k}},\,Y_{I_*} \right)}
+    \end{equation}
+\end{enumerate}
+
+Міру близькості $d$ між двома невід'ємними цілочисельними множинами однакової довжини $\widehat{Y}_{\mathtt{I_k}}$ та $Y_{I_*}$ визначатимемо або за допомогою квадратичної відстані
+\begin{equation}\label{eq: square average distance}
+    d_{S}\left( \widehat{Y}_{\mathtt{I_k}},\,Y_{I_*} \right) = \sum_{t=1}^{T}\left( \widehat{Y}^t_{\mathtt{I_k}} - Y^t_{I_*} \right)^2,
+\end{equation}
+або користуючись зваженою відстанню Жаккара~\cite{Chierichetti2010}
+\begin{equation}\label{eq: weighted Jaccard distance}
+    d_{J}\left( \widehat{Y}_{\mathtt{I_k}},\,Y_{I_*} \right) = 1 - \frac{\sum\limits_{t=1}^{T}\min{\left( \widehat{Y}^t_{\mathtt{I_k}},\,Y^t_{I_*} \right)}}{\sum\limits_{t=1}^{T}\max{\left( \widehat{Y}^t_{\mathtt{I_k}},\,Y^t_{I_*} \right)}}
+\end{equation}
+
+Перевага зваженої відстані Жаккара полягає в тому, що вона зосереджена на відрізку $(0,\,1)$, що дозволяє проводити додаткові аналогії міри між множинами як відсотка несхожості наборів. Крім того, на відміну від квадратичної відстані, відстань Жаккара оперує безпосередньо значеннями елементів вхідних множин, а не їхніми різницями.
+
 \section{Задача навчання за спотвореними спостереженнями}
+
+Припустимо, що для заданої прихованої марковської моделі $\lambda=(\pi,\,A,\,B)$ значення функціонала~\eqref{eq: phi function} від прихованих станів ланцюга $\left\{ X^t \right\}_{t=\overline{1,T}}$ по множинах $I_1,\ldots,\,I_L$ спостерігаються із деякими ймовірностями спотворення $q_1,\,q_2,\ldots,\,q_L$ таким чином:
+\begin{equation*}
+    \phi\left( X^t,\,I_k \right) = \sum_{i \in I_k} \widetilde{X}^t_i,\ k=\overline{1,L}
+\end{equation*}
+де для $i \in I_k$
+\begin{equation}\label{eq: distorted X}
+    \widetilde{X}^t_i =
+    \begin{cases*}
+        1 - X^t_i, & з імовірністю $q_k$ \\
+        X^t_i, & з імовірністю $1 - q_k$ \\
+    \end{cases*}
+\end{equation}
+
+Наприклад, наведемо на рисунку нижче реалізацію прихованої марковської моделі (Рис.~\ref{pic: hidden Markov chain random walk}) при деяких ймовірностях спотворення $q=(q_1,\,q_2)$ множин спостережуваних індексів $I=\{I_1,\,I_2\}=\{ (1,2),\,(3) \}$. Червоним кольором позначені елементи, які змінили своє значення на протилежний бінарний символ:
+
+\begin{figure}[H]\centering
+    \begin{minipage}[H]{0.49\linewidth}
+        \begin{figure}[H]\centering
+            \setfontsize{10pt}
+            \input{Tikzplots/black path in unit cube.tikz}
+        \end{figure}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.49\linewidth}
+        \begin{table}[H]
+            \setfontsize{14pt}
+            \begin{tblr}{
+                    colspec={cccc},
+                    column{1-4}={mode=math},
+                }
+                    & x^t     & \widetilde{x}^t                           & y^t   \\
+                t=1 & (0,1,1) & (\textcolor{red}{1},1,1)                  & (2,1) \\
+                t=2 & (0,1,0) & (0,1,\textcolor{red}{1})                  & (1,1) \\
+                t=3 & (1,1,0) & (\textcolor{red}{0},\textcolor{red}{0},0) & (0,0) \\
+                t=4 & (1,0,0) & (1,\textcolor{red}{1},0)                  & (2,0) \\
+            \end{tblr}
+        \end{table}
+    \end{minipage}
+    \caption{Реалізація зашумленої динаміки прихованої марковської моделі}
+    \label{pic: distorted hidden Markov chain random walk}
+\end{figure}
+
+Переконаємося, що утворена <<зашумлена>> модель є прихованою марковською моделлю, аби мати змогу оцінити за наявними спотвореними даними керуючий параметр $p$ та вектор імовірностей спотворень $q=\left( q_1,\,q_2,\ldots,\,q_L \right)$, використовуючи ітераційний алгоритм навчання Баума-Велша.
+
+Нехай для кожного стану прихованого ланцюга Маркова $\left\{ X^t \right\}_{t=\overline{1,T}}$ в момент часу $t$ введемо на множині спостережуваних областей $I_1,\ldots,\,I_L$ такі біноміально розподілені послідовності випадкових величин:
+\begin{enumerate}
+    \item $\Bigl\{ \xi^k_{01}(X^t) \Bigr\}_{k=\overline{1,L}}$~--- кількості символів <<0>> прихованого стану $X^t$, які в силу ймовірності спотворення $q_k$ змінили своє значення на <<1>>;
+    \item $\Bigl\{ \xi^k_{11}(X^t) \Bigr\}_{k=\overline{1,L}}$~--- кількості символів <<1>> прихованого стану $X^t$, які в силу ймовірності $1-q_k$ не змінили свого значення.
+\end{enumerate} 
+
+Тоді значення функціоналів по множинах спостережень $I_1,\ldots,\,I_L$ в кожен момент часу $t$ утворюватимуться як сума $\Bigl\{ \xi^k_{01}(X^t) + \xi^k_{11}(X^t) \Bigr\}_{k=\overline{1,L}}$, адже значущими для формування значень функціоналів є незалежні перетворення саме такого виду: <<0>>~$\xrightarrow[\hspace{7mm}]{q_k}$~<<1>> та <<1>>~$\xrightarrow[\hspace{7mm}]{1-q_k}$~<<1>>, у чому можна переконатися на прикладі Рис.~\ref{pic: distorted hidden Markov chain random walk}.
+
+\begin{claim}\label{claim: distorted HMM}
+    Якщо множини $I_1,\ldots,\,I_L$ є попарно неперетинними, то утворена послідовність $\left\{ \left( X^t,\,Y^t \right) \right\}_{t=\overline{1,T}}$ є прихованою марковською моделлю $\left( \pi,\,A,\,B^q \right)$ з рівномірним початковим розподілом $\pi$~\eqref{eq: pi initial distribution}, матрицею перехідних імовірностей~\eqref{eq: A transition matrix} та матрицею $B^q$, елементи якої мають вигляд:
+    \begin{equation*}
+        B^q_{xy} = P\left( Y^t=y\,|\,X^t=x \right) = \prod\limits_{k=1}^{L} P\Bigl( \xi^k_{01}(x) + \xi^k_{11}(x) = y_k \Bigr),
+    \end{equation*}
+    і для довільного $k=\overline{1,L}$
+    \begin{equation}\label{eq: xi}
+        \xi^k_{01}(x) \sim Bin\Bigl( n_{0}(k),\, q_k \Bigr),\ \xi^k_{11}(x) \sim Bin\Bigl( n_{1}(k),\, 1 - q_k \Bigr)
+    \end{equation}
+    є незалежними випадковими величинами, де позначено параметри
+
+    \begin{align*}
+        &n_{0}(k) = |I_k| - \sum_{i \in I_k} x_i && \text{кількість <<0>> в множині $I_k$ прихованого стану} \\
+        &n_{1}(k) = \sum_{i \in I_k} x_i && \text{кількість <<1>> в множині $I_k$ прихованого стану}
+    \end{align*}
+\end{claim}
+\begin{proof}
+    За побудовою послідовності $\left\{ \left( X^t,\,Y^t \right) \right\}_{t=\overline{1,T}}$ означення прихованої марковської моделі (Озн. \ref{def: HMM}) виконується. 
+\end{proof}
+
+Причому, як згортка суми двох незалежних біноміально розподілених випадкових величин, компоненти матриці $B^q$ обчислюються так:
+\begin{align*}
+    B^q_{xy} & = \prod\limits_{k=1}^{L} P\Bigl( \xi^k_{01}(x) + \xi^k_{11}(x) = y_k \Bigr) = \\
+    & = \prod\limits_{k=1}^{L} \sum\limits_{j=0}^{n_0(k)} P\Bigl( \xi^k_{01}(x) = j \Bigr)\, P\Bigl( \xi^k_{11}(x) - \xi^k_{01}(x) = y_k - j \Bigr) \\
+    & = \prod\limits_{k=1}^{L} \sum\limits_{j=0}^{n_0(k)} C_{n_0(k)}^j\, q_k^j\, (1-q_k)^{n_0(k)-j} \cdot C_{n_1(k)}^{y_k-j}\, (1-q_k)^{y_k-j}\, q_k^{n_1(k)-y_k+j}
+\end{align*}
+\label{eq: convolution}
+
+Наступним кроком, перш ніж переходити безпосередньо до розв'язку задачі навчання, введемо допоміжну послідовність $\{ Z^t \}_{t=\overline{1,T}}$ векторів, співрозмірних з довжиною бінарних послідовностей $N$, враховуючи нотацію~\eqref{eq: distorted X}:
+\begin{equation*}
+    \forall i \in \overline{1,N}\ :\ Z^t_i =
+    \begin{cases*}
+        \mathbbm{1} \Bigl( \widetilde{X}^t_i \neq X^t_i \Bigr), & $i \in I_1 \cup I_2 \cup \ldots \cup I_L$ \\
+        0, & $i \notin I_1 \cup I_2 \cup \ldots \cup I_L$ \\
+    \end{cases*}
+\end{equation*}
+
+Таким чином, ця послідовність міститиме інформацію про спотвореність кожного зі спостережуваних елементів бінарної послідовності, що, своєю чергою, дозволить в алгоритмі Баума-Велша залучити у явному вигляді ймовірності викривлення $q_1\,\ldots,\,q_L$.
+
+Тож, задавши деяке наближення $\lambda^{(0)}=(\pi,\,A^{(0)},\,B^{q^{(0)}})$, покладемо для наступної ітерації $n+1$
+\begin{equation*}
+    \lambda^{(n+1)} = \argmax\limits_{\lambda} Q\left( \lambda^{(n)},\,\lambda \right) = \argmax\limits_{\lambda} \sum\limits_{x \in E^T} \sum\limits_{z \in E^T} L_{\lambda^{(n)}} \ln L_{\lambda},
+\end{equation*}
+де функція повної правдоподібності матиме вигляд:
+\begin{equation*}
+    L_{\lambda} \equiv P\left( X=x,\,Z=z,\,Y=y \,|\, \lambda \right)
+\end{equation*}
+
+Відтак через формулу переоцінки сумісної ймовірності~\eqref{eq: conditional probability} матимемо:
+\begin{multline*}
+    L_{\lambda} = P_\lambda \left( X=x,\,Z=z,\,Y=y \right) = \\ 
+    = P_\lambda \left( X=x \right) P_\lambda \left( Z=z \,|\, X=x \right) P_\lambda \left( Y=y \,|\, Z=z,\,X=x \right)
+\end{multline*}
+
+Почергово розглянемо кожен множник. З огляду на формулу~\eqref{eq: finite-dimensional distributions} та вигляду матриці $A$ й вектора $\pi$, скінченновимірний розподіл
+\begin{equation*}
+    P_\lambda \left( X=x \right) = \frac{1}{2^N}\, \cdot\, p^{\sum\limits_{t=1}^{T-1} \mathbbm{1} \bigl( d_H\left( x^t,\,x^{t+1} \right) = 0 \bigr)} \cdot \left(\frac{1-p}{N}\right)^{\sum\limits_{t=1}^{T-1} \mathbbm{1} \bigl( d_H\left( x^t,\,x^{t+1} \right) = 1 \bigr)}
+\end{equation*}
+
+Як наслідок марковської властивості (Озн.~\ref{def: markovian property}) та покоординатної умовної незалежності
+\begin{multline*}
+    P_\lambda \left( Z=z \,|\, X=x \right) = \prod_{t=1}^T P_\lambda \left( Z^t=z^t \,|\, X^t=x^t \right) = \\ 
+    = \prod_{t=1}^T \prod_{i=1}^N P_\lambda \left( Z^t_i=z^t_i \,|\, X^t_i=x^t_i \right) = \\ 
+    = \prod_{t=1}^T \prod_{i=1}^N \prod_{k=1}^L \left( q_k^{\mathbbm{1} \left( z^t_i =1 \right)} \cdot (1-q_k)^{\mathbbm{1} \left( z^t_i =0 \right)} \right)^{\mathbbm{1} \left( i \in I_k \right)}
+\end{multline*}
+
+Наостанок, застосовуючи на додачу до марковської властивості умову неперетинності множин $I_1,\ldots,\,I_l$ (Тверд.~\ref{claim: distorted HMM}), матимемо
+
+\begin{multline*}
+    P_\lambda \left( Y=y \,|\, Z=z,\,X=x \right) = \prod_{t=1}^T P_\lambda \left( Y^t=y^t \,|\, Z^t=z^t,\,X^t=x^t \right) = \\ 
+    = \prod_{t=1}^T \prod_{k=1}^L P_\lambda \left( Y^t_k=y^t_k \,|\, Z^t=z^t,\,X^t=x^t \right) = \\ 
+    = \prod_{t=1}^T \prod_{k=1}^L \mathbbm{1} \left( y^t_k = \sum\limits_{i \in I_k} {x^t_i}^{\mathbbm{1} \left( z^t_i=0 \right)} \cdot (1-x^t_i)^{\mathbbm{1} \left( z^t_i=1 \right)} \right),
+\end{multline*}
+що вказує, чи є набір станів $x \in E^T$ та послідовність індикаторів спотворення $z \in E^t$ допустимими при заданій послідовності спостережень $y$. Надалі припускатимемо достовірність цієї події. В результаті отримуємо:
+\begin{multline*}
+    L_{\lambda} = P_\lambda \left( X=x,\,Z=z,\,Y=y \right) = \\ 
+    = \frac{1}{2^N}\, \cdot\, p^{\sum\limits_{t=1}^{T-1} \mathbbm{1} \bigl( d_H\left( x^t,\,x^{t+1} \right) = 0 \bigr)} \cdot \left(\frac{1-p}{N}\right)^{\sum\limits_{t=1}^{T-1} \mathbbm{1} \bigl( d_H\left( x^t,\,x^{t+1} \right) = 1 \bigr)} \times \\
+    \times \prod_{t=1}^T \prod_{i=1}^N \prod_{k=1}^L \left( q_k^{\mathbbm{1} \left( z^t_i =1 \right)} \cdot (1-q_k)^{\mathbbm{1} \left( z^t_i =0 \right)} \right)^{\mathbbm{1} \left( i \in I_k \right)}
+\end{multline*}
+
+Домноживши $L_{\lambda^{(n)}} = P_{\lambda^{(n)}} \left( X=x,\,Z=z,\,Y=y \right)$ отриманий вираз, функція квазі-log правдоподібності розписуватиметься як
+\begin{align*}
+    &Q\left( \lambda^{(n)},\,\lambda \right) = \sum\limits_{x \in E^T} \sum\limits_{z \in E^T} L_{\lambda^{(n)}} \ln L_{\lambda} = \\
+    &= \ln \frac{1}{2^N} \cdot \sum\limits_{x \in E^T} \sum\limits_{z \in E^T} P_{\lambda^{(n)}} \left( X=x,\,Z=z,\,Y=y \right) + \\
+    &+ \ln p \cdot \sum\limits_{t=1}^{T-1} \sum\limits_{x \in E^T} \sum\limits_{z \in E^T} P_{\lambda^{(n)}} \left( X=x,\,Z=z,\,Y=y \right) \mathbbm{1} \Bigl( d_H\left( x^t,\,x^{t+1} \right) = 0 \Bigr) + \\
+    &+ \ln \frac{1-p}{N} \cdot \sum\limits_{t=1}^{T-1} \sum\limits_{x \in E^T} \sum\limits_{z \in E^T} P_{\lambda^{(n)}} \left( X=x,\,Z=z,\,Y=y \right) \mathbbm{1} \Bigl( d_H\left( x^t,\,x^{t+1} \right) = 1 \Bigr) +
+\end{align*}
+\begin{align*} 
+    &+ \sum\limits_{t=1}^T \sum\limits_{i=1}^N \sum\limits_{k=1}^L \ln{q_k} \sum\limits_{x \in E^T} \sum\limits_{z \in E^T} P_{\lambda^{(n)}} \left( X=x,\,Z=z,\,Y=y \right) \mathbbm{1} \Bigl( z^t_i=1,\,i \in I_k \Bigr) + \\
+    &+ \sum\limits_{t=1}^T \sum\limits_{i=1}^N \sum\limits_{k=1}^L \ln(1-q_k) \sum\limits_{x \in E^T} \sum\limits_{z \in E^T} P_{\lambda^{(n)}} \left( X=x,\,Z=z,\,Y=y \right) \mathbbm{1} \Bigl( z^t_i=0,\,i \in I_k \Bigr)
+\end{align*}
+
+Тоді, аналогічно до викладок на сторінці~\pageref{eq: conditional probability} через змінні прямого~\eqref{eq: alpha, forward algorithm coefficients} та зворотного~\eqref{eq: beta, backward algorithm coefficients} ходу при поточному наближенні моделі $\lambda^{(n)}=(\pi,\,A^{(n)},\,B^{q^{(n)}})$ матимемо:
+\begin{align*}
+    &Q\left( \lambda^{(n)},\,\lambda \right) = \ln \frac{1}{2^N} \cdot \sum\limits_{x \in E^T} \sum\limits_{z \in E^T} P_{\lambda^{(n)}} \left( X=x,\,Z=z,\,Y=y \right) + \\
+    &+ \ln p \cdot \sum\limits_{t=1}^{T-1} \sum\limits_{\scaleq[0.8]{\substack{x,\,x' \in E \\ d_H\left( x,\,x' \right) = 0}}} \alpha_t(x)\,A^{(n)}_{xx'}\,B^{q^{(n)}}_{x'y^{t+1}}\,\beta_{t+1}(x')\, + \\ 
+    &+ \ln \frac{1-p}{N} \cdot \sum\limits_{t=1}^{T-1} \sum\limits_{\scaleq[0.8]{\substack{x,\,x' \in E \\ d_H\left( x,\,x' \right) = 1}}} \alpha_t(x)\,A^{(n)}_{xx'}\,B^{q^{(n)}}_{x'y^{t+1}}\,\beta_{t+1}(x')\, + \\
+    &+ \sum\limits_{t=1}^T \sum\limits_{k=1}^L \ln{q_k} \sum\limits_{x \in E} \sum\limits_{x' \in E} \alpha_{t-1}(x')\,A^{(n)}_{x'x}\, q^{(n)}_k\, \beta_t(x) \sum\limits_{i \in I_k} P\left( y^t \,|\, x,\,z_i=0 \right) + \\
+    &+ \sum\limits_{t=1}^T \sum\limits_{k=1}^L \ln(1-q_k) \sum\limits_{x \in E} \sum\limits_{x' \in E} \alpha_{t-1}(x')\,A^{(n)}_{x'x}\, (1-q^{(n)}_k)\, \beta_t(x) \sum\limits_{i \in I_k} P\left( y^t \,|\, x,\,z_i=1 \right),
+\end{align*}
+де події $\{ z_i=0 \}$ чи $\{ z_i=1 \}$ передають інформацію, що для поточного стану $x \in E$ елемент $x_i$ з індексом $i \in I_k$ є спотвореним, а відтак в силу природи (Тверд.~\ref{claim: distorted HMM}) спостережень 
+\begin{align*}
+    P^{q^{(n)}}_{x,i,0} &\equiv P\left( Y^t=y^t \,|\, X^t=x,\,z_i=0 \right) = \\ 
+    &= P\left( \widetilde{\xi^k_{01}}(x) + \widetilde{\xi^k_{11}}(x) = y_k - x_i \right) \cdot \prod\limits_{\substack{m = \overline{1,L} \\ m \neq k}} P\Bigl( \xi^m_{01}(x) + \xi^m_{11}(x) = y_m \Bigr)
+\end{align*}
+та, відповідно
+\begin{align*}
+    P^{q^{(n)}}_{x,i,1} &\equiv P\left( Y^t=y^t \,|\, X^t=x,\,z_i=1 \right) = \\ 
+    &= P\left( \widetilde{\xi^k_{01}}(x) + \widetilde{\xi^k_{11}}(x) = y_k - (1 - x_i) \right) \cdot  \prod\limits_{\substack{m = \overline{1,L} \\ m \neq k}} P\Bigl( \xi^m_{01}(x) + \xi^m_{11}(x) = y_m \Bigr),
+\end{align*}
+де аналогічно до вип. вел.~\eqref{eq: xi} величини
+\begin{equation*}\label{eq: xi distorted}
+    \widetilde{\xi^k_{01}}(x) \sim Bin\Bigl( \widetilde{n}_{0}(k),\, q_k \Bigr),\ \widetilde{\xi^k_{11}}(x) \sim Bin\Bigl( \widetilde{n}_{1}(k),\, 1 - q_k \Bigr)
+\end{equation*}
+є незалежними випадковими величинами з параметрами
+\begin{align*}
+    &\widetilde{n}_{0}(k) = |I_k| - 1 - \sum_{j \in I_k\setminus\{i\}} x_j && \parbox{6.7cm}{кількість <<0>> в множині $I_k$ прихованого стану при відомій інформації спотворення $x_i$ \vspace{5mm}} \\
+    &\widetilde{n}_{1}(k) = \sum_{j \in I_k\setminus\{i\}} x_j && \parbox{6.7cm}{кількість <<1>> в множині $I_k$ прихованого стану при відомій інформації спотворення $x_i$}
+\end{align*}
+
+Як наслідок, складові ймовірностей $P^{q^{(n)}}_{x,i,0}$ та $P^{q^{(n)}}_{x,i,1}$ обчислюватимуться як згортки (стр.~\pageref{eq: convolution}) незалежних біноміально розподілених випдкових величин.
+
+Отже, знайдемо екстремуми отриманої функції квазі-log правдоподібності як розв'язки диференціальних рівнянь $\frac{\partial}{\partial p} Q\left( \lambda^{(n)},\,\lambda \right) = 0$ та $\frac{\partial}{\partial q_k} Q\left( \lambda^{(n)},\,\lambda \right) = 0,\ k=\overline{1,L}$. 
+
+Враховуючи аналогічні (стр.~\pageref{eq: simplified denominator}) кроки спрощення знаменників отриманих виразів, в результаті отримуємо такі ітераційні формули переоцінки параметра $p$ та компонент вектора $q$, починаючи з деякого початкового наближення $p^{(0)}$ та $p^{(0)}:$
+\begin{equation}\label{eq: distortion p estimation}
+    p^{(n+1)} = p^{(n)}\cdot\frac{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,B^{q^{(n)}}_{xy^{t+1}}\,\beta_{t+1}(x)}{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)}
+\end{equation}
+\begin{equation}\label{eq: distortion q estimation}
+    q_k^{(n+1)} = q_k^{(n)}\cdot\frac{\sum\limits_{t=1}^{T}\sum\limits_{x \in E}\sum\limits_{x' \in E} \alpha_{t-1}(x')\,A^{(n)}_{x'x}\,\beta_{t}(x)\sum\limits_{i \in I_k}P^{q^{(n)}}_{x,i,1}}{|I_k|\sum\limits_{t=1}^{T}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)},\ k=\overline{1,L}
+\end{equation}
+
+Знову ж таки, що при великих значеннях довжини ланцюга $(T>300)$ виникає потреба у шкалюванні коефіцієнтів прямого та зворотного ходу згідно з процедурою, описаною на сторінці \pageref{eq: alpha, forward algorithm coefficients}. Процедура нормування не вносить змін у вигляд ітераційних формул переоцінки параметра $p$ чи компонент вектора $q$.
 
 \chapconclude{\ref{chap: theory}}
 
-Наприкінці розділу наводяться короткі підсумки.
+В рамках дослідження різних характеристик моделі за наявними спостереженнями про динаміку набору функціоналів від станів прихованого ланцюга бінарних послідовностей вдалося розв'язати декілька задач, а саме: побудовано оцінку керуючого параметра системи; відтворено послідовність прихованих станів; локалізовано джерело надходження значень набору функціоналів від деякої невідомої підмножини стану прихованого ланцюга; побудовано оцінку керуючого параметра системи, враховуючи зашумленість спостережуваних даних.
+
+Надалі згенеруємо модель та проведемо чисельний експеримент, на основі якого перевіримо ефективність отриманих аналітичних результатів.
