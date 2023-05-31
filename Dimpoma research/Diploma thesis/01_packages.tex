@@ -1,8 +1,10 @@
-%%%% У даний файл додавайте всі необхідні вам додаткові пакети, наприклад...
+% У даний файл додавайте всі необхідні вам додаткові пакети, наприклад...
 
-\usepackage{mathtools} % for cases environment
+\setlength{\footskip}{3.60004pt} % to avoid annoying VScode warning
+
+\usepackage{mathtools} % for {cases} environment
 \usepackage[h]{esvect} % fancy vector arrows
-\usepackage{bbm} % for using indicator \mathbbm{1}
+\usepackage{bbm}       % for using indicator \mathbbm{1}
 
 \usepackage[bibstyle=gost-numeric,sorting=none]{biblatex}
 \addbibresource{Tsybulnyk diploma thesis.bib}
@@ -13,19 +15,43 @@
 \setmainfont{CMU serif}
 
 \usepackage{float}
+\usepackage{cmap}        % make LaTeX PDF output copy-and-pasteable
 \usepackage{microtype}
-\usepackage{cmap} % make LaTeX PDF output copy-and-pasteable
-\usepackage{xcolor}
-\usepackage{microtype}
+
+\usepackage[dvipsnames]{xcolor}
 
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta}
-\usetikzlibrary{bending} % for flexing and bending arrows
+\usetikzlibrary{arrows.meta} % fancy vector arrows in tikz
 \usepackage{pgfplots}
+\usepackage{pgfplotstable}
 \pgfplotsset{compat=1.3}
 
-\usepackage{tabularray} % пакет для просунутих таблиць
+\usepackage{tabularray}
 
-\usepackage{xcolor}
+\usepackage{listings}
+\DeclareCaptionLabelFormat{listingcap}{\vspace*{1mm}Програма #2}
+\captionsetup[lstlisting]{margin=0pt, singlelinecheck=false, labelfont=bf, textfont=normalfont, justification=justified, labelsep=endash, labelformat=listingcap, font = {Large, stretch = 1.5}}
+
+\lstset{
+    frame=single,
+    language=Python,
+    aboveskip=3mm,
+    belowskip=3mm,
+    columns=flexible,
+    basicstyle=\linespread{1}\small\ttfamily,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    commentstyle=\color{OliveGreen},
+    % stringstyle=\color{Mahogany},
+    morestring=[b]''',
+    showstringspaces=false,
+    morekeywords={import, as, for, while, in, return, range},
+    keywordstyle=\bfseries\color{blue!50!black},
+    emph={[1]import, as, for, while, in, return}, emphstyle={[1]\bfseries\color{magenta!60!black}},
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=4,
+}
+
 \pagecolor[rgb]{0.118,0.118,0.118}
 \color[rgb]{0.8,0.8,0.8}

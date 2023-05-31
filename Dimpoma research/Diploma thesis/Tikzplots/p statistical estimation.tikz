@@ -1,0 +1,56 @@
+\begin{tikzpicture}
+    \begin{axis}[
+        xlabel = $n$-та ітерація алгоритму,
+        ylabel = Значення параметра,
+        scale only axis,
+        xmin = 5.5, xmax = 12.5,
+        ymin = 0.1956, ymax = 0.2024,
+        yticklabel style = {
+            /pgf/number format/.cd,
+            fixed,
+            precision=3
+        },
+        grid = both,
+        grid style = {draw=gray!30},
+        minor grid style = {draw=gray!10},
+        minor x tick num = 0,
+        minor y tick num = 4,
+        legend style = {at={(0.95,0.95)}, font=\small, anchor=north east, cells={anchor=west}},
+    ]
+        \addplot[
+            solid,
+            no marks,
+            line width=2pt
+        ] table {
+            -2 0.2
+            14 0.2
+        };
+        \addplot[blue!80, mark=*, mark size=3] table {
+            1 0.30661118090452294
+            2 0.24566955953416394
+            3 0.2210417875441206
+            4 0.2092812077409121
+            5 0.20322018498012812
+            6 0.1999737008122712
+            7 0.1981988076845518
+            8 0.19721758027051758
+            9 0.1966717779184349
+            10 0.1963671404511091
+            11 0.19619678427603013
+            12 0.1961014180663038
+        };
+        \addplot[
+            dash pattern={on 7pt off 4pt},
+            no marks,
+            line width=2pt
+        ] table {
+            -2 0.1959799
+            14 0.1959799
+        };
+        \legend{
+            \ Істинне значення $p$,
+            \ Ітераційна переоцінка $p^{(n)}$,
+            \ Статистична оцінка $\widehat{\,p\,}$
+        };
+    \end{axis}
+\end{tikzpicture}

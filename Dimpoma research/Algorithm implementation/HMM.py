@@ -502,7 +502,6 @@ def calculate_p_denominator(alpha: npt.NDArray[np.float64], N: int, T: int) -> f
 
     return (T-1)*sum
 
-@jit(target_backend='cuda', forceobj=True)
 def calculate_q_estimation_part_1(
         y: npt.NDArray[np.int64],
         qj: float,
@@ -599,7 +598,6 @@ def calculate_q_estimation_part_1(
 
     return output
 
-@jit(target_backend='cuda', forceobj=True)
 def calculate_q_estimation_part_2(
         y: npt.NDArray[np.int64],
         qj: float,
@@ -640,7 +638,6 @@ def calculate_q_estimation_part_2(
     -------
     output : float
     """
-
     def P_сonditional_probability_x_i_not_distorted(apo,xt,yt,i,j,qj,N,I):
         y = apo[yt]
         
@@ -1803,7 +1800,7 @@ def display_x_viterbi_results_by_mismatch_indices(hamming_distances,mismatch_ind
                 width=0.5,
             )
 
-            # print(f"height: {height}")
+            print(f"height: {height}")
 
         elif len(hamming_distances) != 1:
             if sum(hd_distribution) != 0:
@@ -1815,6 +1812,8 @@ def display_x_viterbi_results_by_mismatch_indices(hamming_distances,mismatch_ind
                 )
             else:
                 ax1.hist([], label=f"$d={j}$")
+
+            print(f"d={j} : M = {np.mean(hd_distribution)}, S^2 = {np.var(hd_distribution)}")
 
             ax1.legend()
         
@@ -1930,6 +1929,8 @@ def display_x_viterbi_results_by_groups_of_mismatch_indices(hamming_distances,mi
                 width=0.5,
             )
 
+            print(f"height: {height}")
+
         elif len(hamming_distances) != 1:
             if sum(hd_distribution) != 0:
                 ax1.hist(
@@ -1940,6 +1941,8 @@ def display_x_viterbi_results_by_groups_of_mismatch_indices(hamming_distances,mi
                 )
             else:
                 ax1.hist([], label=f"$d={j}$")
+
+            print(f"d={j} : M = {np.mean(hd_distribution)}, S^2 = {np.var(hd_distribution)}")
 
             ax1.legend()
                 

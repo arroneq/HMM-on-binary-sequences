@@ -1,0 +1,47 @@
+\begin{tikzpicture}
+    \begin{axis}[
+        xlabel={Значення оцінок $q^{[r]}_1$},                    
+        ylabel={Значення оцінок $q^{[r]}_2$},          
+        ytick={0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18},
+        xtick={0.02,0.05,0.08,0.11,0.14},
+        enlargelimits=0.05,
+        colormap={}{
+            gray(0cm)=(1);
+            gray(1cm)=(0);
+        },
+        colorbar,                       % add a colorbar
+        view={0}{90},                   % adjust the view angle to 2d
+        xtick align=outside,
+        ytick align=outside,
+        xticklabel style={
+            /pgf/number format/.cd,
+            fixed,
+            precision=2
+        },
+        yticklabel style={
+            /pgf/number format/.cd,
+            fixed,
+            precision=2
+        },
+        colorbar style={
+            title={Щільність},            % title of the colorbar
+            at={(1.1,0.5)},               % position of the colorbar
+            anchor=west,                  % anchor position
+            scaled ticks=false,
+            tick align=outside,
+            tick pos=right,
+            ticklabel style={
+                /pgf/number format/.cd,
+                fixed,
+                precision=2
+            },
+        },
+    ]
+    \addplot3[
+        scatter,                % plot as scatter points
+        mark=square*,           % marker style
+        only marks,
+        mark size=4.5,
+    ] table [meta=density] {Data/p & q restarts density.txt};
+    \end{axis}
+\end{tikzpicture}

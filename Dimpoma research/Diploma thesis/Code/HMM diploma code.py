@@ -379,7 +379,9 @@ def estimate_implicit_indices(
         metric[k] = define_distance(phi_real,phi_offered,metrics_type)
 
     min_metric_value = min(metric)
-    argmin_metric_value = [index for index in range(len(metric)) if metric[index] == min_metric_value]
+    argmin_metric_value = [
+        index for index in range(len(metric)) if metric[index] == min_metric_value
+    ]
 
     predicted_implicit_indices = []
     for index in argmin_metric_value:

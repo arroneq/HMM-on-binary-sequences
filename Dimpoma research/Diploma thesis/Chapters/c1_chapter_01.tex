@@ -12,8 +12,8 @@
 \begin{definition}\label{def: markovian property}
     Послідовність $\left\{ X^t \right\}_{t\geqslant 1}$ утворює ланцюг Маркова, якщо:
     \begin{align*}
-        & \forall t\geqslant 2 \quad \forall i^1,\,i^2,\,\ldots,\,i^{t+1} \in E: \\
-	    & P\left( X^{t+1}=i^{t+1} \, |\, X^t=i^t,\,\ldots\,,\, X^1=i^1 \right)=P\left( X^{t+1}=i^{t+1} \, |\, X^t=i^t \right)
+        & \forall t\geqslant 2 \quad \forall i^1,\,i^2,\ldots,\,i^{t+1} \in E: \\
+	    & P\left( X^{t+1}=i^{t+1} \, |\, X^t=i^t,\ldots\,,\, X^1=i^1 \right)=P\left( X^{t+1}=i^{t+1} \, |\, X^t=i^t \right)
     \end{align*}
     Цю умову називають марковською властивістю.
 \end{definition}
@@ -27,7 +27,7 @@
 
 Ця матриця є стохастичною, тобто
 \begin{equation*}
-    \forall i,j \in E: p_{ij} \geqslant 0\ \text{ та }\ \forall i \in E: \sum\limits_{j \in E} p_{ij} = 1
+    \forall i,\,j \in E: p_{ij} \geqslant 0\ \text{ та }\ \forall i \in E: \sum\limits_{j \in E} p_{ij} = 1
 \end{equation*}
 
 Окрім матриці $A$, для ланцюга Маркова слід задати вектор початкового розподілу ймовірностей
@@ -39,8 +39,8 @@
 
 Скінченновимірні розподіли~\cite{Norris1997} ланцюга Маркова $\lambda=(\pi,\,A)$ повністю визначаються матрицею перехідних імовірностей $A$ та вектором початкового розподілу ймовірностей $\pi$. А саме:
 \begin{align}
-    &\forall t\geqslant 2 \quad \forall i^1,\,i^2,\,\ldots,\,i^{t} \in E: \notag \\
-    &P\left( X^{1}=i^{1},\,X^{2}=i^{2},\,\ldots\,,\, X^{t-1}=i^{t-1},\, X^{t}=i^{t} \right) = \pi_{i^1} \cdot p_{i^1i^2} \cdot \ldots \cdot p_{i^{t-1}i^{t}} \label{eq: finite-dimensional distributions}
+    &\forall t\geqslant 2 \quad \forall i^1,\,i^2,\ldots,\,i^{t} \in E: \notag \\
+    &P\left( X^{1}=i^{1},\,X^{2}=i^{2},\ldots\,,\, X^{t-1}=i^{t-1},\, X^{t}=i^{t} \right) = \pi_{i^1} \cdot p_{i^1i^2} \cdot \ldots \cdot p_{i^{t-1}i^{t}} \label{eq: finite-dimensional distributions}
 \end{align}
 
 \section{Поняття прихованої марковської моделі}
@@ -52,16 +52,16 @@
     \begin{enumerate}
         \item послідовність $\left\{ X^t \right\}_{t\geqslant 1}$ утворює ланцюг Маркова з початковим розподілом $\pi$ та матрицею перехідних імовірностей $A$;
         \item послідовність $\left\{\left( X^t,\,Y^t \right)\right\}_{t\geqslant 1}$ є ланцюгом Маркова;
-        \item випадкові величини $Y^1,\,Y^2,\,\ldots,\,Y^t$ є умовно незалежними при заданому наборі величин $X^1,\,X^2,\,\ldots,\,X^t:$
+        \item випадкові величини $Y^1,\,Y^2,\ldots,\,Y^t$ є умовно незалежними при заданому наборі величин $X^1,\,X^2,\ldots,\,X^t:$
         \begin{multline*}
-            \forall t\geqslant 2 \quad \forall j^1,\,j^2,\,\ldots,\,j^t \in F \quad \forall i^1,\,i^2,\,\ldots,\,i^t \in E: \\
-            P\left( Y^1=j^1,\,\ldots,\,Y^t=j^t \,|\, X^1=i^1,\,\ldots,\,X^t=i^t \right) = \\
-            = \prod\limits_{k=1}^{t}P\left( Y^k=j^k \,|\, X^1=i^1,\,\ldots,\,X^t=i^t \right)
+            \forall t\geqslant 2 \quad \forall j^1,\,j^2,\ldots,\,j^t \in F \quad \forall i^1,\,i^2,\ldots,\,i^t \in E: \\
+            P\left( Y^1=j^1,\ldots,\,Y^t=j^t \,|\, X^1=i^1,\ldots,\,X^t=i^t \right) = \\
+            = \prod\limits_{k=1}^{t}P\left( Y^k=j^k \,|\, X^1=i^1,\ldots,\,X^t=i^t \right)
         \end{multline*}
-        \item умовний розподіл випадкової величини $Y^k$ в момент часу $k$ при заданих $X^1,\,X^2,\,\ldots,\,X^t$ залежить лише від $X^k:$
+        \item умовний розподіл випадкової величини $Y^k$ в момент часу $k$ при заданих $X^1,\,X^2,\ldots,\,X^t$ залежить лише від $X^k:$
         \begin{align*}
-            & \forall t\geqslant 2 \quad \forall k=\overline{1,t} \quad \forall j^k \in F \quad \forall i^1,\,i^2,\,\ldots,\,i^t \in E: \\
-            & P\left( Y^k=j^k \,|\, X^1=i^1,\,\ldots,\,X^t=i^t \right) = P\left( Y^k=j^k \,|\, X^k=i^k \right)
+            & \forall t\geqslant 2 \quad \forall k=\overline{1,t} \quad \forall j^k \in F \quad \forall i^1,\,i^2,\ldots,\,i^t \in E: \\
+            & P\left( Y^k=j^k \,|\, X^1=i^1,\ldots,\,X^t=i^t \right) = P\left( Y^k=j^k \,|\, X^k=i^k \right)
         \end{align*}
     \end{enumerate}
 \end{definition}
@@ -73,13 +73,13 @@
     B = \Bigl( B_{ij} \Bigr)_{i,j \in E \times F} = \Bigl( P\left( Y^{t}=j \,|\, X^{t}=i \right) \Bigr)_{i,j \in E \times F}
 \end{equation*} 
 
-Позначатимемо приховану марковську модель з початковим розподілом $\pi$, матрицею перехідних імовірностей $A$ та матрицею умовних ймовірностей спостережень при заданих прихованих станах $B$ таким чином: $\lambda=(\pi,\,A,\,B)$.
+Позначатимемо приховану марковську модель з початковим розподілом $\pi$, матрицею перехідних імовірностей $A$ та матрицею умовних імовірностей спостережень при заданих прихованих станах $B$ таким чином: $\lambda=(\pi,\,A,\,B)$.
 
 \section{Ітераційний алгоритм Баума-Велша}
 
 Нехай протягом деякого часу $t=\overline{1,T}$ спостерігається послідовність випадкових величин 
 \begin{equation*}
-    \left( Y^1=y^1,\,\ldots,\,Y^T=y^T \right) \Longleftrightarrow Y=y
+    \left( Y^1=y^1,\ldots,\,Y^T=y^T \right)\ \Longleftrightarrow\ Y=y
 \end{equation*}
 деякої прихованої марковської моделі $\lambda=(\pi,\,A,\,B)$, параметри $\pi,\,A,\,B$ якої є невідомими. Постає питання: як за набором наявних даних віднайти оптимальні параметри моделі?
 
@@ -116,18 +116,18 @@
 Особливістю алгоритму навчання Баума-Велша є використання так званих змінних прямого~\eqref{eq: alpha, forward algorithm coefficients} та зворотного~\eqref{eq: beta, backward algorithm coefficients} ходу, за допомогою яких обчислення функції правдоподібності вимагає лише $T\cdot|E|^2$ добутків. Вказані коефіцієнти визначаються наступним чином:
 \begin{align}
     & \forall x \in E: \notag \\
-    & \alpha_t(x) = P\left( Y^1=y^1,\,\ldots,\,Y^t=y^t,\,X^t=x \,|\, \lambda^{(n)} \right) \label{eq: alpha, forward algorithm coefficients} \\
-    & \beta_t(x) = P\left( Y^{t+1}=y^{t+1},\,\ldots,\,Y^T=y^T \,|\, X^t=x,\, \lambda^{(n)} \right) \label{eq: beta, backward algorithm coefficients}
+    & \alpha_t(x) = P\left( Y^1=y^1,\ldots,\,Y^t=y^t,\,X^t=x \,|\, \lambda^{(n)} \right) \label{eq: alpha, forward algorithm coefficients} \\
+    & \beta_t(x) = P\left( Y^{t+1}=y^{t+1},\ldots,\,Y^T=y^T \,|\, X^t=x,\, \lambda^{(n)} \right) \label{eq: beta, backward algorithm coefficients}
 \end{align}
 
-Перевага цих коефіцієнтів полягає у тому, що їх можна обчислити рекурентно згідно з відповідними співвідношеннями~\cite[розділ 5]{Nilsson2005} для змінних прямого ходу
+Перевага цих коефіцієнтів полягає у тому, що їх можна обчислити рекурентно~\cite[розділ 5]{Nilsson2005} згідно з наведеними нижче співвідношеннями для змінних прямого ходу
 \begin{align*}
     & t = 1              && \forall x \in E: \alpha_1(x)=\pi_{x}\,B_{x,y^1} \\
     & t = \overline{2,T} && \forall x \in E: \alpha_{t}(x)=\sum\limits_{x'\in E}\alpha_{t-1}(x')\,A_{x'x}\,B_{xy^{t}} 
 \end{align*}
 та змінних зворотного ходу
 \begin{align*}
-    & t = T                && \forall x \in E: \beta_T(x)=1 \\
+    & t = T                  && \forall x \in E: \beta_T(x)=1 \\
     & t = \overline{T-1,\,1} && \forall x \in E: \beta_t(x)=\sum\limits_{x' \in E}\beta_{t+1}(x')\,A_{x x'}\,B_{x'y^{t+1}}
 \end{align*}
 
@@ -148,14 +148,14 @@
 
 Отримавши оптимальну модель $\widehat{\lambda}=(\widehat{\pi},\,\widehat{A},\,\widehat{B})$ як розв'язок задачі навчання, перейдемо до так званої задачі декодування: віднайдемо ланцюжок прихованих станів системи. Алгоритм, який дозволяє ефективно розв’язати задачу декодування, називається алгоритмом Вітербі~\cite[розділ 6]{Nilsson2005}.
 
-Отже, шукатимемо таку послідовність прихованих станів $\widehat{X}^1,\,\widehat{X}^2,\,\ldots,\,\widehat{X}^T$, яка найкращим чином описує наявні спостереження:
+Отже, шукатимемо таку послідовність прихованих станів $\widehat{X}^1,\,\widehat{X}^2,\ldots,\,\widehat{X}^T$, яка найкращим чином описує наявні спостереження:
 \begin{equation*}
     \widehat{X} = \argmax\limits_{x \in E^T} P\left( X=x \,|\, Y=y,\, \widehat{\lambda} \right) = \argmax\limits_{x \in E^T} P\left( X=x,\, Y=y \,|\, \widehat{\lambda} \right)
 \end{equation*}
 
 Введемо величини $\delta_t(x)$ максимальної ймовірності спостереження ланцюжка довжини $t$, що закінчується станом $x \in E$ в момент часу $t:$
 \begin{equation*}\scaleq[0.9]{
-    \delta_t(x)=\max\limits_{x^1,\ldots,\,x^{t-1}}P\left( X^1=x^1,\,\ldots,\,X^{t-1}=x^{t-1},\,X^t=x,\,Y^1=y^1,\,\ldots,\,Y^t=y^t \,|\, \widehat{\lambda}  \right)}
+    \delta_t(x)=\max\limits_{x^1,\ldots,\,x^{t-1}}P\left( X^1=x^1,\ldots,\,X^{t-1}=x^{t-1},\,X^t=x,\,Y^1=y^1,\ldots,\,Y^t=y^t \,|\, \widehat{\lambda}  \right)}
 \end{equation*}
 
 Вказані ймовірності можна визначити рекурентно:
@@ -164,13 +164,13 @@
     & t = \overline{2,T} && \forall x \in E: \delta_{t}(x)=B_{xy^{t}}\cdot\max_{x' \in E}\Bigl\{ \delta_{t-1}(x')\,A_{x'x} \Bigr\}
 \end{align*}
 
-При цьому, щоб знайти оптимальний ланцюжок прихованих станів, необхідно відстежувати аргумент, при якому досягається максимум $\delta_t(x)$ для кожного $t$ та $x$. Таким чином, алгоритм Вітербі знаходження найбільш ймовірного ланцюжка прихованих станів є таким:
+При цьому, щоб знайти оптимальний ланцюжок прихованих станів необхідно відстежувати аргумент, при якому досягається максимум $\delta_t(x)$ для кожного $t$ та $x$. Таким чином, алгоритм Вітербі знаходження найбільш імовірного ланцюжка прихованих станів є таким:
 
 \begin{enumerate}
-    \item ініціалізація:
-    \begin{align*}
-        &\forall x \in E: && \delta_1(x)=\pi_{x}B_{xy^1}, \ \psi_1(x)=1
-    \end{align*}    
+    \item крок ініціалізації:
+    \begin{equation*}
+        \forall x \in E\ :\ \delta_1(x)=\pi_{x}B_{xy^1}, \ \psi_1(x)=1
+    \end{equation*}    
     \item обчислити коефіцієнти $\delta_t(x)$ та відповідні аргументи $\psi_t(x):$
     \begin{align*}
         &\forall t=\overline{1,T}, \ \forall x \in E: && \delta_{t}(x)=B_{xy^{t}}\cdot\max_{x'\in E}\Bigl\{\delta_{t-1}(x')\,A_{x'x}\Bigr\} \\
@@ -182,23 +182,23 @@
         &\widehat{\psi}=\argmax_{x \in E}\Bigl\{\delta_T(x)\Bigr\}
     \end{align*}
     \item визначити оптимальний ланцюжок станів (у зворотному порядку), починаючи з останнього $\widehat{x}^T=\widehat{\psi}:$
-    \begin{align*}
-        &\forall t=\overline{T-1,\,1}: && \widehat{x}^t=\psi_{t+1}(\widehat{x}^{t+1})
-    \end{align*}
+    \begin{equation*}
+        \forall t=\overline{T-1,\,1}\ :\ \widehat{x}^t=\psi_{t+1}(\widehat{x}^{t+1})
+    \end{equation*}
 \end{enumerate}
 
-\section{Елементи математичної статистики}
+\section{Властивості точкових оцінок}
 
 Окреслимо основні інструменти математичної статистики, які будуть використані при побудові статистичних оцінок невідомих параметрів.
 
-Вектор $\vv{X}=(X^1,\,\ldots,\,X^T)$ незалежних однаково розподілених випадкових величин з деякої параметричної сім'ї розподілів $\mathfrak{F}=\{ F_\theta(x),\ \theta \in \Theta \}$ називають вибіркою об'єму $T$. При цьому, параметр розподілу $\theta$ може бути невідомим. Функція від вибірки $S_T=S_T(\vv{X})$ називається статистикою. 
+Вектор $\vv{X}=(X_1,\ldots,\,X_T)$ незалежних однаково розподілених випадкових величин з деякої параметричної сім'ї розподілів $\mathfrak{F}=\{ F_\theta(x),\ \theta \in \Theta \}$ називають вибіркою об'єму $T$. При цьому, параметр розподілу $\theta$ може бути невідомим. Функція від вибірки $S_T=S_T(\vv{X})$ називається статистикою. 
 
 Якщо значення статистики $S_T(\vv{X})$ при заданій реалізації вибірки приймають за наближене значення невідомого параметра $\theta$ розподілу $F_\theta(x)$, тоді $S_T$ називають точковою оцінкою $\theta$. 
 
 \begin{definition}
     Статистика $S_T$ називається змістовною оцінкою $\theta$, якщо вона збігається за ймовірністю до істинного значення оцінюваного параметра, тобто 
     \begin{equation*}
-        \forall \theta \in \Theta\ :\ S_T \xrightarrow[T \longrightarrow \infty]{P} \theta \quad \Longleftrightarrow \quad \forall \varepsilon > 0 : \lim\limits_{T \longrightarrow \infty} P\Bigl( \left|S_T - \theta\right| \geqslant \varepsilon \Bigr) = 0
+        \forall \theta \in \Theta\ :\ S_T \xrightarrow[T \longrightarrow \infty]{P} \theta \quad \Longleftrightarrow \quad \forall \varepsilon > 0\ : \lim\limits_{T \longrightarrow \infty} P\Bigl( \left|S_T - \theta\right| \geqslant \varepsilon \Bigr) = 0
     \end{equation*}
 \end{definition}
 
@@ -212,14 +212,14 @@
 Також зазначимо для набору незалежних однаково розподілених випадкових величин так званий закон великих чисел~\cite{Larsen2017}:
 
 \begin{theorem}\label{theorem: law of big numbers}
-    Нехай $\left\{ X^t \right\}_{t\geqslant 1}$~--- послідовність незалежних однаково розподілених випадкових величин зі скінченним математичним сподіванням $MX^1=m$. Тоді вибіркове середнє $\overline{X}$ збігається за ймовірністю до значення математичного сподівання заданої вибірки:
+    Нехай $\left\{ X_t \right\}_{t\geqslant 1}$~--- послідовність незалежних однаково розподілених випадкових величин зі скінченним математичним сподіванням $MX_1=m$. Тоді випадкова величина $\overline{X}=\frac{1}{T}\sum\limits_{t=1}^{T} X_t$ збігається за ймовірністю до значення математичного сподівання $m:$
     \begin{equation*}
-        \overline{X} \xrightarrow[T \longrightarrow \infty]{P} m \quad \Longleftrightarrow \quad \forall \varepsilon > 0 : \lim\limits_{T \longrightarrow \infty} P\left( \Bigl| \frac{1}{T}\sum\limits_{k=1}^{T} X^k - m \Bigr| \geqslant \varepsilon \right) = 0
+        \overline{X} \xrightarrow[T \longrightarrow \infty]{P} m \quad \Longleftrightarrow \quad \forall \varepsilon > 0\ : \lim\limits_{T \longrightarrow \infty} P\left( \Bigl| \frac{1}{T}\sum\limits_{t=1}^{T} X_t - m \Bigr| \geqslant \varepsilon \right) = 0
     \end{equation*}
 \end{theorem}
 
 \chapconclude{\ref{chap: review}}
 
-У цьому розділі було розглянуто основний математичний апарат прихованих марковських моделей, необхідний для подальшого дослідження динаміки частково спостережуваного ланцюга Маркова на бінарних послідовностях.
+У цьому розділі було розглянуто основний математичний апарат прихованих марковських моделей, необхідний для подальшого дослідження динаміки частково спостережуваного ланцюга Маркова на бінарних послідовностях 
 
-Використовуючи викладки цього розділу, проведемо побудову теоретичних оцінок невідомих параметрів вказаної моделі.
+Використовуючи наведені викладки, проведемо у наступному розділі побудову оцінок для шуканих параметрів моделі.

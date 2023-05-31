@@ -121,6 +121,7 @@
 \renewcommand{\thesubfigure}{\asbuk{subfigure}}
 
 \captionsetup[table]{margin=0pt, singlelinecheck=false, labelfont=bf, textfont=normalfont, justification=justified, labelsep=endash, labelformat=tablecap, font = {Large, stretch = 1.5}} % формат для таблиць
+% \captionsetup[table]{margin=0pt, justification=centering, labelsep=endash, labelfont=bf, textfont=normalfont, labelformat=tablecap, font = {Large, stretch = 1.5}} % формат для таблиць
 \captionsetup[figure]{justification=centering, labelsep=endash, labelfont=bf, textfont=normalfont, labelformat=figurecap, font = {Large, stretch = 1.5}} % формат для рисунків
 %\captionsetup[lstlisting]{margin=0pt, format=listing, singlelinecheck=false, font = {stretch = 1.5}} % формат для лістингів
 
