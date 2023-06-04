@@ -1800,8 +1800,6 @@ def display_x_viterbi_results_by_mismatch_indices(hamming_distances,mismatch_ind
                 width=0.5,
             )
 
-            print(f"height: {height}")
-
         elif len(hamming_distances) != 1:
             if sum(hd_distribution) != 0:
                 ax1.hist(
@@ -1812,8 +1810,6 @@ def display_x_viterbi_results_by_mismatch_indices(hamming_distances,mismatch_ind
                 )
             else:
                 ax1.hist([], label=f"$d={j}$")
-
-            print(f"d={j} : M = {np.mean(hd_distribution)}, S^2 = {np.var(hd_distribution)}")
 
             ax1.legend()
         
@@ -1929,8 +1925,6 @@ def display_x_viterbi_results_by_groups_of_mismatch_indices(hamming_distances,mi
                 width=0.5,
             )
 
-            print(f"height: {height}")
-
         elif len(hamming_distances) != 1:
             if sum(hd_distribution) != 0:
                 ax1.hist(
@@ -1941,8 +1935,6 @@ def display_x_viterbi_results_by_groups_of_mismatch_indices(hamming_distances,mi
                 )
             else:
                 ax1.hist([], label=f"$d={j}$")
-
-            print(f"d={j} : M = {np.mean(hd_distribution)}, S^2 = {np.var(hd_distribution)}")
 
             ax1.legend()
                 

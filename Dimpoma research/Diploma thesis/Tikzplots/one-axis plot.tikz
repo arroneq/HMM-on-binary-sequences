@@ -7,12 +7,12 @@
         % xmin=-0.05,xmax=1.05, 
         ymin=-0.05,ymax=0.05,   
     ]
-        \addplot [mark=*, only marks] coordinates {
-            (0.19708442583882374, 0)  % Mp
-            (0.2, 0)                  % p real
-            (0.154041044817333, 0)    % R max
-            (0.24012780686031449, 0)  % R max
+        \addplot[mark=*, only marks] coordinates {
+            (0.19708442583882374, 0)                 % math expectation
+            (0.2, 0)                                 % real value
+            (0.154041044817333, 0)                   % R min
+            (0.24012780686031449, 0)                 % R max
         };
-        \draw[blue,line width=1pt] (axis cs:0.1,0) arc (0:90:2mm);
+        \draw[blue, line width=1pt] (axis cs:0.1,0) arc (0:90:2mm);
     \end{axis}
 \end{tikzpicture}

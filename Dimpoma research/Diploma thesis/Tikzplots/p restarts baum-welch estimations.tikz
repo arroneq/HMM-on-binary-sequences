@@ -1,24 +1,24 @@
 \begin{tikzpicture}
     \begin{axis}[
-        xlabel = Значення оцінок $p^{[r]}$,
-        ylabel = Частка серед усіх рестартів,
+        xlabel={Значення оцінок $p^{[r]}$},    
+        ylabel={Частка серед усіх рестартів},  
         scale only axis,
-        ymin = 0,
-        xticklabel style = {
+        ymin=0.0,                               % set 0.0 as a "floor" of the y-axis
+        xticklabel style={
             /pgf/number format/.cd,
             fixed,
             precision=2
-        },
-        yticklabel style = {
+        },                                      % set fixed precision of 2 decimal places
+        yticklabel style={
             /pgf/number format/.cd,
             fixed,
             precision=2
-        },
-        grid = both,
-        grid style = {draw=gray!30},
-        minor grid style = {draw=gray!10},
-        xtick align = center,
-        xtick = {
+        },                                      % set fixed precision of 2 decimal places
+        grid=both,
+        grid style={draw=gray!30},
+        minor grid style={draw=gray!10},
+        xtick align=center,                     % align x-axis tick marks to the center of the bars
+        xtick={
             0.09559923, 
             0.1470824,
             0.19856556,
@@ -26,15 +26,15 @@
             0.3015319,   
             0.35301506 
         },
-        minor y tick num = 3,
-        xmajorgrids = false,
-        xminorgrids = false,
+        minor y tick num=3,
+        xmajorgrids=false,
+        xminorgrids=false,
     ]
         \addplot[
-            hist={bins=10},
+            hist={bins=10},                      % set the plot as a hist plot
             fill=blue!80, 
             opacity=0.7,
-            y filter/.expression={y/200}
+            y filter/.expression={y/200},        % set y-axis as a density 
         ] table [y=p] {Data/p restarts estimations.txt};
     \end{axis}
 \end{tikzpicture}

@@ -1,30 +1,36 @@
 \begin{tikzpicture}
     \begin{axis}[
-        xlabel = $n$-та ітерація алгоритму,
-        ylabel = Значення параметра,
+        xlabel={$n$-та ітерація алгоритму},
+        ylabel={Значення параметра},
         scale only axis,
-        xmin = 5.5, xmax = 12.5,
-        ymin = 0.1956, ymax = 0.2024,
-        yticklabel style = {
+        xmin=5.5, xmax=12.5,
+        ymin=0.1956, ymax=0.2024,
+        yticklabel style={
             /pgf/number format/.cd,
             fixed,
             precision=3
+        },                                   % set fixed precision of 3 decimal places
+        grid=both,
+        grid style={draw=gray!30},
+        minor grid style={draw=gray!10},
+        minor x tick num=0,
+        minor y tick num=4,
+        legend style={                       % customize the legend style
+            at={(0.95,0.95)},                % position the legend at the top right corner of the plot
+            font=\small,                     % set the font size of the legend
+            anchor=north east,               % anchor the legend to the north east corner
+            cells={anchor=west}              % align the legend text to the left
         },
-        grid = both,
-        grid style = {draw=gray!30},
-        minor grid style = {draw=gray!10},
-        minor x tick num = 0,
-        minor y tick num = 4,
-        legend style = {at={(0.95,0.95)}, font=\small, anchor=north east, cells={anchor=west}},
     ]
         \addplot[
             solid,
             no marks,
-            line width=2pt
+            line width=2pt,
         ] table {
             -2 0.2
             14 0.2
         };
+
         \addplot[blue!80, mark=*, mark size=3] table {
             1 0.30661118090452294
             2 0.24566955953416394
@@ -42,11 +48,12 @@
         \addplot[
             dash pattern={on 7pt off 4pt},
             no marks,
-            line width=2pt
+            line width=2pt,
         ] table {
             -2 0.1959799
             14 0.1959799
         };
+        
         \legend{
             \ Істинне значення $p$,
             \ Ітераційна переоцінка $p^{(n)}$,
