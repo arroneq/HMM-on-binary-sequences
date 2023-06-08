@@ -13,7 +13,11 @@
 !/Dimpoma research/Diploma thesis/Images
 !/Dimpoma research/Diploma thesis/Tikzplots
 
-/Diploma practice/Presentation/*
+/Dimpoma research/Diploma presentation/*
+!/Dimpoma research/Diploma presentation/Tikzplots
+!/Dimpoma research/Diploma presentation/Data
+
+/Diploma practice/Practice presentation/*
 
 /Diploma practice/Report/*
 !/Diploma practice/Report/Chapters

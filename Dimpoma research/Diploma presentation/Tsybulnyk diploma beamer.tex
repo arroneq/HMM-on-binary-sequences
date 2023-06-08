@@ -1,0 +1,530 @@
+% !TeX program = lualatex
+% !TeX encoding = utf8
+% !TeX spellcheck = uk_Ua
+
+\documentclass[12pt,mathserif]{beamer}
+\usepackage{fontspec}
+\setsansfont{Arial}
+\usepackage[english, ukrainian]{babel}
+
+\usetheme{Boadilla}
+\usecolortheme{seahorse}
+
+\makeatletter
+\setbeamertemplate{footline}{
+    \leavevmode%
+    \hbox{%
+        % here used "author -> title -> date" color beamer theme/font for fancy gradient looking
+        % but hbox filled with \inserttitle -> \insertinstitute -> \insertframenumber
+        \begin{beamercolorbox}[wd=0.65\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+            \usebeamerfont{author in head/foot}
+            \insertshortinstitute
+        \end{beamercolorbox}%
+        \begin{beamercolorbox}[wd=0.25\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+            \usebeamerfont{title in head/foot}
+            Київ\ \insertdate
+        \end{beamercolorbox}%
+        \begin{beamercolorbox}[wd=0.1\paperwidth,ht=2.25ex,dp=1ex,center]{date in head/foot}%
+            \usebeamerfont{date in head/foot}
+            \insertframenumber{} / \inserttotalframenumber
+        \end{beamercolorbox}%
+    }%
+    \vskip0pt%
+}
+
+% remove the navigation symbols
+\makeatletter
+\setbeamertemplate{navigation symbols}{}
+
+\usepackage{tabularray}
+\usepackage{mathtools,amsfonts}
+\usepackage{bbm} % for using indicator \mathbbm{1} 
+\usepackage{xurl}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\pgfplotsset{compat=1.18}
+
+\usepackage{float}
+\usepackage{microtype}
+\usepackage{cmap} % make LaTeX PDF output copy-and-pasteable
+\usepackage{xcolor}
+
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\newcommand*{\scaleq}[2][4]{\scalebox{#1}{$#2$}}
+
+\usepackage{amsthm}
+\theoremstyle{plain}
+\newtheorem{claim}{\indent Твердження}
+
+\title{Оцінювання характеристик частково спостережуваного ланцюга Маркова на двійкових послідовностях}
+\institute{НТУУ <<КПІ ім. Ігоря Сікорського>> НН ФТІ ММАД}
+\date{2023}
+
+\setbeamercolor{block title}{bg=blue!20, fg=black}
+
+\begin{document}
+
+\begin{frame}
+    \begin{center}
+        Дипломна робота на тему
+    \end{center}
+    \begin{block}{}
+        \centering\Large
+        \vspace{3mm}
+        Оцінювання характеристик частково спостережуваного ланцюга Маркова на двійкових послідовностях
+        \vspace{3mm} 
+    \end{block}
+    \begin{columns}[t]
+        \begin{column}{0.6\linewidth}
+        \end{column}
+        \begin{column}{0.4\linewidth}
+            \scriptsize
+            \textbf{Виконав} \\
+            \textit{студент 4 курсу, групи ФІ-91} \\
+            \textit{113 <<Прикладна математика>>} \\
+            \textit{Цибульник А. В.} \\ \vspace{2mm}
+            \textbf{Науковий керівник} \\
+            \textit{ст. викл. Наказной П. О.} \\ \vspace{2mm}
+            \textbf{Консультант} \\
+            \textit{к.ф.-\,м.н., доцент Ніщенко І. І.}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Актуальність та мета дослідження}
+    \textbf{Актуальність:} вивчення еволюції систем за частковою інформацією про динаміку їхніх станів, які, своєю чергою, є наборами символів певної довжини (ДНК, мова жестів).
+
+    \vspace{1cm}
+    \textbf{Мета дослідження:} за зміною в часі набору функціоналів від двійкових послідовностей побудувати оцінки невідомих параметрів моделі.
+\end{frame}
+
+\begin{frame}
+    \frametitle{План доповіді}
+    \tableofcontents
+\end{frame}
+
+% \AtBeginSection[]
+% {
+%   \begin{frame}
+%     \frametitle{План доповіді}
+%     \tableofcontents[currentsection]
+%   \end{frame}
+% }
+
+
+%%% --------------------------------------------------------------------
+\section{Моделювання об'єкта дослідження}
+%%% --------------------------------------------------------------------
+
+\begin{frame}
+    \frametitle{\insertsection}
+    Стан системи --- двійкова послідовність довжини $N$. 
+    \vspace{0.5cm}
+
+    Еволюція станів системи за узагальненою моделлю Еренфестів: навмання обраний символ стану $X^t$ з імовірністю $p$ не змінюється, а з імовірністю $(1-p)$~--- змінюється.
+    \vspace{0.5cm}
+
+    Наприклад, при $N=12$
+    \begin{table}\centering
+        \begin{tblr}{
+                colspec={cc},
+                column{1,2}={mode=math},
+            }
+                & x^t \\
+            t=1 & 01\textbf{0}011011101            \\
+            t=2 & 01\textbf{1}0110\textbf{1}1101   \\
+            t=3 & \,0110110\textbf{0}11\textbf{0}1 \\
+            t=4 & \,0110110011\textbf{0}1          \\
+        \end{tblr}
+    \end{table}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\insertsection}
+    Спостерігаємо набір функціоналів 
+    \begin{equation*} 
+        Y^t = \left( Y^t_1,\ldots,Y^t_L \right) = \left( \sum\limits_{i \in I_1}X^t_i,\ldots,\sum\limits_{i \in I_L}X^t_i \right),
+    \end{equation*} 
+    де $I_1,\ldots,I_L$ є заданими підмножинами $\{ 1,2,\ldots,N \}$.
+    \vspace{0.5cm}
+
+    Наприклад, при $N=12$, $I_1=(1,2,3)$, $I_2=(6,7,10,11,12)$
+    \begin{table}\centering
+        \begin{tblr}{
+                colspec={ccc},
+                column{1,2,3}={mode=math},
+            }
+                & x^t & y^t \\
+            t=1 & \textcolor{orange!90!black}{010}01\textcolor{green6}{10}11\textcolor{green6}{101} 
+                & (\textcolor{orange!90!black}{1},\textcolor{green6}{3}) \\
+            t=2 & \textcolor{orange!90!black}{011}01\textcolor{green6}{10}11\textcolor{green6}{101} 
+                & (\textcolor{orange!90!black}{2},\textcolor{green6}{3}) \\
+            t=3 & \textcolor{orange!90!black}{011}01\textcolor{green6}{10}01\textcolor{green6}{101} 
+                & (\textcolor{orange!90!black}{2},\textcolor{green6}{3}) \\
+            t=4 & \textcolor{orange!90!black}{011}01\textcolor{green6}{10}01\textcolor{green6}{101} 
+                & (\textcolor{orange!90!black}{2},\textcolor{green6}{3}) \\
+        \end{tblr}
+    \end{table}
+\end{frame}
+
+% \begin{frame}
+%     \frametitle{\insertsection}
+%     \begin{claim}
+%         Послідовність $\left\{ \left( X^t,Y^t \right) \right\}_{t=\overline{1,T}}$ утворює приховану марковську модель $\lambda = \left( \pi,A,B \right):$
+%         \begin{equation*}
+%             \pi_{x}=P\left( X^1=x \right) = \frac{1}{2^N}
+%         \end{equation*}
+%         \begin{equation*}
+%             A_{xx'}=P\left( X^{t+1}=x'\,|\,X^{t}=x \right) = 
+%             \begin{cases*}
+%                 p, & $d_H(x,x')=0$\\
+%                 \tfrac{1-p}{N}, & $d_H(x,x')=1$ \\ 
+%                 0, & інакше
+%             \end{cases*}
+%         \end{equation*}
+%         \begin{equation*}
+%             B_{xy}=P\left( Y^t=y\,|\,X^t=x \right) = \prod\limits_{k=1}^{L} \mathbbm{1} \left( y_k=\sum\limits_{i \in I_k} x_i \right)
+%         \end{equation*}
+%     \end{claim}
+% \end{frame}
+
+%%% --------------------------------------------------------------------
+\section{Побудова оцінок параметрів моделі}
+%%% --------------------------------------------------------------------
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    \begin{enumerate}[1]
+        \item За наявними частковими спостереженнями $\left\{ Y^t \right\}_{t=\overline{1,T}}$ про динаміку бінарних послідовностей оцінити керуючий параметр $p$ заданої марковської моделі.
+    \end{enumerate}
+    \vspace{0.5cm}
+
+    Метод максимальної правдоподібності:
+    \begin{equation*}
+        \widehat{\,p\,} = \argmax\limits_{p} \sum_{x \in E^T} P\, \bigl( X=x,Y=y \,|\, p \bigr) \equiv \argmax\limits_{p} \sum_{x \in E^T} L_{p,x,y}
+    \end{equation*}
+
+    Ітераційний алгоритм Баума-Велша:
+    \begin{equation*}
+        p^{(n+1)} = \argmax\limits_{p} Q\left( p^{(n)},p \right) = \argmax\limits_{p} \sum_{x \in E^T}L_{p^{(n)},x,y} \ln L_{p,x,y}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\insertsection}
+    Формула переоцінки параметра $p$, починаючи з деякого $p^{(0)}:$
+    \begin{equation*}
+        p^{(n+1)} = p^{(n)}\cdot\frac{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,B_{xy^{t+1}}\,\beta_{t+1}(x)}{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)},
+    \end{equation*}
+    де 
+    \begin{align*}
+        & \alpha_t(x) = P\left( Y^1=y^1,\ldots,Y^t=y^t,\,X^t=x \,|\, p^{(n)} \right) \\
+        & \beta_t(x) = P\left( Y^{t+1}=y^{t+1},\ldots,Y^T=y^T \,|\, X^t=x,\, p^{(n)} \right)
+    \end{align*}
+\end{frame}
+
+\begin{frame}
+    \frametitle{\insertsection}
+    Крім того, побудовано змістовну та незміщену точкову оцінку параметра $p$ за допомогою методу моментів:
+    \begin{equation*}
+        \widehat{\,p\,} = 1-\frac{N}{\left| \bigcup\limits_{k=1}^{L}I_k \right|} \left( 1-\frac{1}{T-1}\sum_{t=1}^{T-1}\mathbbm{1} \Bigl( Y^t=Y^{t+1} \Bigr) \right)
+    \end{equation*}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    \begin{enumerate}[2]
+        \item За наявними спостереженнями $\left\{ Y^t \right\}_{t=\overline{1,T}}$ та оцінкою керуючого параметра $p^{(n)}$ відновити послідовність двійкових наборів.
+    \end{enumerate}
+    \vspace{0.5cm}
+
+    Алгоритм Вітербі: пошук такої послідовності станів $\widehat{X\,}^1,\widehat{X\,}^2,\ldots,\widehat{X\,}^T$, яка найкращим чином описує наявні спостереження:
+    \begin{equation*}
+        \widehat{X\,} = \argmax\limits_{x \in E^T} P\left( X=x\,|\,Y=y,p^{(n)} \right)
+    \end{equation*}
+\end{frame} 
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    \begin{enumerate}[3]
+        \item За відомими значеннями набору функціоналів від деякої невідомої підмножини $I_*$ стану прихованого ланцюга, оцінити потужність та набір елементів цієї підмножини.
+    \end{enumerate}
+    \vspace{0.5cm}
+    
+    Отже, спостерігаємо значення $Y^t_{I_*}=\sum\limits_{i \in I_*}X^t_i$.
+    \vspace{0.25cm}
+
+    Наприклад, $N=12$, $I_1=(1,2,3)$, $I_2=(6,7,10,11,12)$, $I_*=\,?$
+    \begin{center}
+        \begin{tblr}{
+            colspec={cccc},
+            column{1-4}={mode=math},
+        }
+        & x^t & y^t & y^t_{I_*} \\
+        t=1 & \textcolor{orange!90!black}{010}01\textcolor{green6}{10}11\textcolor{green6}{101} 
+            & (\textcolor{orange!90!black}{1},\textcolor{green6}{3}) 
+            & 3 \\
+        t=2 & \textcolor{orange!90!black}{011}01\textcolor{green6}{10}11\textcolor{green6}{101} 
+            & (\textcolor{orange!90!black}{2},\textcolor{green6}{3}) 
+            & 3 \\
+        t=3 & \textcolor{orange!90!black}{011}01\textcolor{green6}{10}01\textcolor{green6}{101} 
+            & (\textcolor{orange!90!black}{2},\textcolor{green6}{3}) 
+            & 2 \\
+        t=4 & \textcolor{orange!90!black}{011}01\textcolor{green6}{10}01\textcolor{green6}{101} 
+            & (\textcolor{orange!90!black}{2},\textcolor{green6}{3}) 
+            & 2 \\
+        \end{tblr}
+    \end{center}  
+\end{frame}
+
+\begin{frame}
+    \frametitle{\insertsection}
+    За набором спостережуваних <<сигналів>> $Y^1_{I_*},\ldots,Y^T_{I_*}$, оцінкою параметра $p^{(n)}$ та декодованим ланцюгом станів $\left\{ \widehat{X\,}^t \right\}_{t=\overline{1,T}}:$
+    \vspace{0.5cm}
+
+    \begin{itemize}
+        \item побудовано змістовну та незміщену точкову оцінку потужності множини $I_*:$
+        \begin{equation*}
+            \widehat{|I_*|} = \frac{N}{1-p} \left( 1-\frac{1}{T-1}\sum_{t=1}^{T-1}\mathbbm{1}\Bigl( Y^t_{I_*}=Y^{t+1}_{I_*} \Bigr) \right) 
+        \end{equation*}
+        \item розроблено алгоритм визначення компонент множини $I_*.$
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    \begin{enumerate}[4]
+        \item Спостереження на множинах $I_1,\ldots,I_L$ спотворюються з імовірностями $q_1,\ldots,q_L:$
+
+    \begin{equation*}
+        Y^t=\left( Y^t_k \right)_{k=\overline{1,L}} = \left( \sum_{i \in I_k} \widetilde{X\,}^t_i \right)_{k=\overline{1,L}}
+    \end{equation*}
+    де для $i \in I_k$
+    \begin{equation*}
+        \widetilde{X\,}^t_i =
+        \begin{cases*}
+            1 - X^t_i, & з імовірністю $q_k$ \\
+            X^t_i, & з імовірністю $1 - q_k$ \\
+        \end{cases*}
+    \end{equation*}
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{\insertsection}
+    Наприклад, при $N=12$, $I_1=(1,2,3)$, $I_2=(6,7,10,11,12)$
+
+    \begin{table}\centering
+        \begin{tblr}{
+            colspec={ccccc},
+            column{1-5}={mode=math},
+        }
+
+            & x^t & \widetilde{x\,}^t & y^t & q \\
+        t=1 & 010011011101 
+            & 0\textcolor{red}{0}0011011101 
+            & (0,3) 
+            & (q_1,q_2) \\
+        t=2 & 011011011101 
+            & 01\textcolor{red}{0}011011101 
+            & (1,3) 
+            & (q_1,q_2) \\
+        t=3 & 011011001101 
+            & \textcolor{red}{1}110110011\textcolor{red}{1}1 
+            & (3,4)
+            & (q_1,q_2) \\
+        t=4 & 011011001101 
+            & 011011001\textcolor{red}{0}0\textcolor{red}{0}
+            & (2,1) 
+            & (q_1,q_2) \\
+        
+        \end{tblr}
+    \end{table}
+    \vspace{0.5cm}
+
+    Задача: за спотвореними спостереженнями оцінити керуючий параметр моделі $p$ та вектор ймовірностей спотворення $q$, використовуючи ітераційний алгоритм Баума-Велша.
+\end{frame}
+
+% \begin{frame}   
+%     \frametitle{\insertsection}
+
+%     \begin{claim}
+%         Якщо множини $I_1,\ldots,I_L$ є попарно неперетинними, то утворена послідовність $\left\{ \left( X^t,Y^t \right) \right\}_{t=\overline{1,T}}$ є прихованою марковською моделлю $\left( \pi,A,B^q \right)$, де 
+%         \begin{equation*}
+%             B^q_{xy} = P\left( Y^t=y\,|\,X^t=x \right) = \prod\limits_{k=1}^{L} P\left( \xi^k_{01}(x) + \xi^k_{11}(x) = y_k \right),
+%         \end{equation*}
+%         \begin{equation*}\scaleq[0.82]{
+%             \xi^k_{01}(x) \sim Bin\left( |I_k| - \sum\limits_{i \in I_k} x_i,\, q_k \right),\ \xi^k_{11}(x) \sim Bin\left( \sum\limits_{i \in I_k} x_i,\, 1 - q_k \right)},\ k=\overline{1,L}
+%         \end{equation*}
+%     \end{claim}
+% \end{frame}
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    Починаючи з деякого наближення $p^{(0)}$ та $q^{(0)}$, формула переоцінки параметра $p:$
+    \begin{equation*}
+        p^{(n+1)} = p^{(n)}\cdot\frac{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,B^{q^{(n)}}_{xy^{t+1}}\,\beta_{t+1}(x)}{\sum\limits_{t=1}^{T-1}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)}
+    \end{equation*}
+    Формула переоцінки компонент вектора $q:$
+    \begin{equation*}
+        q_k^{(n+1)} = q_k^{(n)}\cdot\frac{\sum\limits_{t=1}^{T}\sum\limits_{x \in E}\sum\limits_{x' \in E} \alpha_{t-1}(x')\,A^{(n)}_{x'x}\,\beta_{t}(x)\sum\limits_{i \in I_k}P^{q^{(n)}}_{x,i,1}}{|I_k|\sum\limits_{t=1}^{T}\sum\limits_{x \in E} \alpha_t(x)\,\beta_t(x)}
+    \end{equation*}
+\end{frame}
+
+%%% --------------------------------------------------------------------
+\section{Результати чисельного експерименту}
+%%% --------------------------------------------------------------------
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    Було згенеровано прихований ланцюг Маркова протягом $T=200$ моментів часу, $N=5$ та $p=0.2$. Множина спостережуваних індексів $I=\{I_1,I_2\}=\{(2,3),(1,4)\}:$
+
+    \begin{figure}[H]\centering
+        \input{Tikzplots/input model.tikz}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    \begin{itemize}
+        \item За наявними частковими спостереженнями про динаміку бінарних послідовностей оцінено керуючий параметр $p:$
+    \end{itemize}
+    
+    \begin{columns}
+        \begin{column}{0.6\linewidth}
+            \begin{figure}[H]
+                \input{Tikzplots/p estimation.tikz}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.4\linewidth}
+            \begin{tblr}{
+                hlines,vlines,
+                colspec={ccc},
+                column{1-3}={mode=math},
+            }
+
+            p   & p^{(12)} & |p- p^{(12)}| \\
+            0.2 & 0.1959   & 0.0041        \\
+
+            \end{tblr}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    Для спостережуваних множин $I_1,I_2$ згенерованого ланцюга було задано такі коефіцієнти спотворення:
+    \vspace{0.3cm}
+
+    \begin{figure}[H]
+        \input{Tikzplots/distortion coefficients.tikz}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    \begin{itemize}
+        \item За спотвореними спостереженнями оцінено керуючий параметр моделі $p$ та вектор ймовірностей $q:$
+    \end{itemize}
+
+    \begin{columns}
+        \begin{column}{0.6\linewidth}
+            \begin{figure}[H]
+                \input{Tikzplots/p distortion estimation.tikz}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.45\linewidth}
+            \begin{tblr}{
+                hlines,vlines,
+                colspec={ccc},
+                column{1-3}={mode=math},
+            }
+
+            p   & p^{(53)} & |p-p^{(53)}| \\
+            0.2 & 0.2559   & 0.0559       \\
+
+            \end{tblr}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{\insertsection}
+    \begin{itemize}
+        \item За спотвореними спостереженнями оцінено керуючий параметр моделі $p$ та вектор ймовірностей $q:$
+    \end{itemize}
+
+    \begin{columns}
+        \begin{column}{0.6\linewidth}
+            \begin{figure}[H]
+                \input{Tikzplots/q distortion estimation.tikz}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.45\linewidth}
+            \begin{tblr}{
+                hlines,vlines,
+                colspec={ccc},
+                column{1}={wd=0.8cm},
+                column{1-3}={mode=math},
+            }
+
+            q_1   & q_1^{(53)} & |q_1-q_1^{(53)}| \\
+            0.05  & 0.0454     & 0.0046           \\
+
+            \end{tblr}
+            
+            \vspace{0.5cm}
+            
+            \begin{tblr}{
+                hlines,vlines,
+                colspec={ccc},
+                column{1}={wd=0.8cm},
+                column{1-3}={mode=math},
+            }
+
+            q_2  & q_2^{(53)} & |q_2-q_2^{(53)}| \\
+            0.1  & 0.1184     & 0.0184         \\
+
+            \end{tblr}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+%%% --------------------------------------------------------------------
+\section*{Висновки}
+%%% --------------------------------------------------------------------
+
+\begin{frame}
+    \frametitle{\insertsection} 
+    Невідомі параметри заданої моделі були оцінені 
+    \begin{itemize}
+        \item або шляхом побудови змістовних та незміщених оцінок за допомогою методу моментів;
+        \item або за допомогою ітераційного алгоритму Баума-Велша.
+    \end{itemize}
+    \vspace{0.5cm}
+
+    Результати чисельного експерименту продемонстрували ефективність використаних методів, зокрема збіжність побудованих оцінок до істинних значень параметрів при збільшенні кількості спостережень.
+\end{frame}
+
+%%% --------------------------------------------------------------------
+\section*{Апробація результатів та публікації}
+%%% --------------------------------------------------------------------
+
+\begin{frame}
+    \frametitle{\insertsection}
+    \begin{itemize}
+        \item \textit{Цибульник А. В., Ніщенко І. І.,} XXI Всеукраїнська науково-практична конференція студентів, аспірантів та молодих вчених <<Теоретичні i прикладні проблеми фізики, математики та інформатики>>.
+        
+        \vspace{4mm} Секція <<Математичне моделювання та аналіз даних>> (стр. 419\,--\,432).
+        
+        \vspace{4mm} 11-12 травня 2023 р., м. Київ.
+    \end{itemize}
+\end{frame}
+
+\end{document}

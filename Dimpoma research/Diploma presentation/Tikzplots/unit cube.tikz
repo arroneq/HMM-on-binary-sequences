@@ -1,0 +1,27 @@
+\begin{tikzpicture}[font=\footnotesize]
+    % mark apexes of a cube
+    \coordinate[label=below left:{$(0,0,0)$}] (A) at (0,0,3);
+    \coordinate[label=below left:{$(1,0,0)$}] (B) at (3,0,3);
+    \coordinate[label=above right:{$(0,1,0)$}] (C) at (0,0,0);
+    \coordinate[label=above right:{$(1,1,0)$}] (D) at (3,0,0);
+
+    \coordinate[label=above left:{$(0,0,1)$}] (E) at (0,3,3);
+    \coordinate[label=above left:{$(1,0,1)$}] (F) at (3,3,3); % [label={[shift={(-0.5,0)}]{$(1,0,1)$}}]
+    \coordinate[label=above right:{$(0,1,1)$}] (G) at (0,3,0);
+    \coordinate[label=above right:{$(1,1,1)$}] (H) at (3,3,0);
+
+    % draw the cube (top & bottom)
+    \draw[very thick] (C) -- (A) -- (B) -- (D) -- (C);
+    \draw[very thick] (E) -- (G) -- (H) -- (F) -- (E);
+
+    % draw the cube (front & back)
+    \draw[very thick] (A) -- (E);
+    \draw[very thick] (B) -- (F);
+    \draw[very thick] (C) -- (G);
+    \draw[very thick] (D) -- (H);
+
+    % mark blue points in each apex
+    \foreach \point in {A,B,C,D,E,F,G,H}{
+        \fill[blue] (\point) circle [radius=2.5pt];
+    }
+\end{tikzpicture}

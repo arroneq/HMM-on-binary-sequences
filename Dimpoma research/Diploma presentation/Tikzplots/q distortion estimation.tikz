@@ -1,0 +1,21 @@
+\begin{tikzpicture}[scale=0.8]
+    \begin{axis}[
+        xlabel={Значення $q_1^{(n)}$},
+        ylabel={Значення $q_2^{(n)}$},
+        grid=both,
+        grid style={draw=gray!30},
+        minor tick num=4,
+        minor grid style={draw=gray!10},
+        x tick label style={
+            /pgf/number format/.cd,
+            fixed,
+            precision=2
+        }
+    ]
+        \addplot[blue!80, mark=*] table[x=q1, y=q2] {Data/baum-welch distortion learning algorithm.txt};
+        \addplot[red, mark=*] table[x=q1, y=q2] {
+            n p q1 q2
+            0 0.55 0.3 0.4
+        };
+    \end{axis}
+\end{tikzpicture}

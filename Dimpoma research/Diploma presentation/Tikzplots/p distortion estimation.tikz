@@ -1,0 +1,18 @@
+\begin{tikzpicture}[scale=0.8]
+    \begin{axis}[
+        xlabel={$n$\,-\,та ітерація алгоритму},
+        ylabel={Значення параметра $p^{(n)}$},
+        ymax=0.62, ymin=0.18,
+        grid=both,
+        grid style={draw=gray!30},
+        minor grid style={draw=gray!10},
+        minor x tick num=4,
+        minor y tick num=3,
+    ]
+        \addplot[blue!80, mark=*] table[x=n, y=p] {Data/baum-welch distortion learning algorithm.txt};
+        \addplot[red, mark=*] table[x=n, y=p] {
+            n p
+            0 0.55
+        };
+    \end{axis}
+\end{tikzpicture}
